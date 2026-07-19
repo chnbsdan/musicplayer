@@ -59,9 +59,16 @@ const show = (text, nextText) => {
     containerRef.value.style.display = 'block'
     containerRef.value.style.opacity = '1'
 
-    // 打字效果
+    // 打字效果 - 使用内联样式确保动画生效
     const span = document.createElement('span')
     span.className = 'typing-text'
+    span.style.cssText = `
+      display: inline-block !important;
+      overflow: hidden;
+      white-space: nowrap;
+      animation: typing 2s steps(40, end);
+      animation-fill-mode: both;
+    `
     span.textContent = text
     currentLineRef.value.appendChild(span)
 
@@ -429,19 +436,6 @@ defineExpose({
   text-align: center;
 }
 
-#floating-lyrics .current-line .typing-text {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  animation: typing 2s steps(40, end);
-  animation-fill-mode: both;
-}
-
-@keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
 #lyrics-resize-handle {
   position: absolute;
   bottom: 3px;
@@ -610,5 +604,21 @@ defineExpose({
 
 #lyrics-settings-panel .btn-apply:hover {
   transform: scale(1.02);
+}
+</style>
+
+<!-- ===== 全局样式：打字效果 ===== -->
+<style>
+#floating-lyrics .current-line .typing-text {
+  display: inline-block !important;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end);
+  animation-fill-mode: both;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
 }
 </style>
