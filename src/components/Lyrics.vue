@@ -7,7 +7,6 @@
     <div class="lyrics-settings-btn" @click.stop="toggleSettings">⚙</div>
   </div>
 
-  <!-- 设置面板 -->
   <div id="lyrics-settings-panel" ref="settingsPanelRef" @click.stop>
     <div class="panel-header">
       <span>🎤 歌词设置</span>
@@ -45,7 +44,7 @@ let dragData = null
 let resizeData = null
 let isSettingsOpen = false
 
-// ===== 显示歌词 =====
+// ===== 显示歌词（打字效果） =====
 const show = (text, nextText) => {
   if (!store.lyricsVisible) return
   if (text === currentLyric.value) return
@@ -60,19 +59,11 @@ const show = (text, nextText) => {
     containerRef.value.style.display = 'block'
     containerRef.value.style.opacity = '1'
 
-    const typingSpan = document.createElement('span')
-    typingSpan.className = 'typing-text'
-    typingSpan.textContent = text
-
-    const fadeSpan = document.createElement('span')
-    fadeSpan.className = 'fade-in-text'
-    fadeSpan.textContent = text
-
-    if (text.length > 15) {
-      currentLineRef.value.appendChild(fadeSpan)
-    } else {
-      currentLineRef.value.appendChild(typingSpan)
-    }
+    // 打字效果
+    const span = document.createElement('span')
+    span.className = 'typing-text'
+    span.textContent = text
+    currentLineRef.value.appendChild(span)
 
     if (nextLineRef.value) {
       nextLineRef.value.textContent = nextText || ''
@@ -92,14 +83,12 @@ const hide = () => {
   currentLyric.value = ''
 }
 
-// ===== 设置当前歌曲 =====
 const setCurrentSong = (song) => {
   if (songTitleRef.value) {
     songTitleRef.value.textContent = song ? `🎵 ${song.name} - ${song.artist || ''}` : '🎵 点击播放音乐'
   }
 }
 
-// ===== 切换可见性 =====
 const toggleVisibility = () => {
   const visible = store.toggleLyrics()
   if (visible) {
@@ -144,7 +133,6 @@ const updateFromDOM = () => {
   }
 }
 
-// ===== 开始/停止轮询 =====
 const startUpdate = () => {
   if (interval) clearInterval(interval)
   interval = setInterval(updateFromDOM, 200)
@@ -170,7 +158,6 @@ const applyStyles = () => {
   })
 }
 
-// ===== 重置 =====
 const reset = () => {
   if (containerRef.value) {
     containerRef.value.style.left = '50%'
@@ -337,21 +324,15 @@ const doResize = (clientX, clientY) => {
   el.style.height = newH + 'px'
 }
 
-// ===== 监听事件 =====
+// ===== 事件监听 =====
 const onPlayerPlay = (e) => {
   const song = e.detail?.song
   if (song) setCurrentSong(song)
   startUpdate()
 }
 
-const onPlayerPause = () => {
-  stopUpdate()
-}
-
-const onPlayerEnded = () => {
-  stopUpdate()
-  hide()
-}
+const onPlayerPause = () => { stopUpdate() }
+const onPlayerEnded = () => { stopUpdate(); hide() }
 
 // ===== 生命周期 =====
 onMounted(() => {
@@ -398,7 +379,6 @@ defineExpose({
   padding: 18px 30px 30px 30px;
   border-radius: var(--radius);
   backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
   border: 1px solid var(--lyrics-border);
   display: none;
   opacity: 0;
@@ -457,19 +437,9 @@ defineExpose({
   animation-fill-mode: both;
 }
 
-#floating-lyrics .current-line .fade-in-text {
-  opacity: 0;
-  animation: fadeInText 0.5s ease-in forwards;
-}
-
 @keyframes typing {
   from { width: 0; }
   to { width: 100%; }
-}
-
-@keyframes fadeInText {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
 }
 
 #lyrics-resize-handle {
