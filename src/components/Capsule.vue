@@ -1,5 +1,9 @@
 <template>
-  <button id="music-capsule" @click="togglePlayer" :class="{ playing: store.isPlaying }" title="展开播放器">
+  <button id="music-capsule" 
+          @click="togglePlayer" 
+          :class="{ playing: store.isPlaying }" 
+          title="展开播放器"
+          :style="{ display: visible ? 'flex' : 'none' }">
     <span class="icon-music">♪</span>
     <img id="capsule-cover" :src="coverImage" alt="cover">
   </button>
@@ -11,14 +15,21 @@ import { usePlayerStore } from '../stores/playerStore'
 
 const store = usePlayerStore()
 const coverImage = ref('/src/assets/cover.jpg')
+const visible = ref(true)
 
 const togglePlayer = () => {
-  const event = new CustomEvent('capsule-toggle')
-  window.dispatchEvent(event)
+  window.dispatchEvent(new CustomEvent('capsule-toggle'))
 }
 
-// 暴露给父组件
-defineExpose({ togglePlayer })
+const show = () => {
+  visible.value = true
+}
+
+const hide = () => {
+  visible.value = false
+}
+
+defineExpose({ togglePlayer, show, hide, visible })
 </script>
 
 <style scoped>
