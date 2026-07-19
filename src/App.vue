@@ -36,7 +36,7 @@
       </svg>
     </a>
 
-    <!-- ===== 页脚 - 热聊区按钮绑定事件 ===== -->
+    <!-- 页脚 -->
     <footer class="footer">
       <span>© 2024 Music Player · Made with ♥</span>
       <button @click="openChat">💬 热聊区</button>
@@ -64,17 +64,12 @@ const playerRef = ref(null)
 const lyricsRef = ref(null)
 const chatRef = ref(null)
 
-// ===== 打开热聊区 =====
 const openChat = () => {
-  console.log('🔥 点击热聊区按钮')
   if (chatRef.value) {
     chatRef.value.open()
-  } else {
-    console.warn('chatRef 未初始化')
   }
 }
 
-// ===== 右键菜单事件处理 =====
 const handlePlayToggle = () => {
   playerRef.value?.toggle()
 }
@@ -130,7 +125,6 @@ const handleClosePlayer = () => {
   }
 }
 
-// ===== 胶囊切换播放器 =====
 const onCapsuleToggle = () => {
   if (playerRef.value?.isOpen) {
     playerRef.value.close?.()
@@ -142,7 +136,6 @@ const onCapsuleToggle = () => {
   }
 }
 
-// ===== 歌单切换自动展开 =====
 const onPlaylistSwitch = (e) => {
   const id = e.detail?.id
   if (id) {
@@ -155,7 +148,6 @@ onMounted(() => {
   store.loadTheme()
   window.addEventListener('capsule-toggle', onCapsuleToggle)
   window.addEventListener('playlist-switch', onPlaylistSwitch)
-  console.log('App 已挂载，chatRef:', chatRef.value)
 })
 
 onUnmounted(() => {
@@ -164,7 +156,204 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
+/* ===== 全局基础样式 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg-primary);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background var(--transition);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.app.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* ===== CSS 变量 ===== */
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: rgba(15, 15, 35, 0.75);
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #fff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --lyrics-bg: rgba(15, 15, 35, 0.75);
+  --lyrics-border: rgba(255, 255, 255, 0.08);
+  --btn-bg: rgba(255, 255, 255, 0.12);
+  --btn-hover: rgba(255, 255, 255, 0.25);
+  --dropdown-bg: rgba(20, 20, 40, 0.92);
+  --menu-bg: rgba(0, 0, 0, 0.9);
+  --aplayer-bg: rgba(255, 255, 255, 0.95);
+  --aplayer-text: #000;
+  --toast-bg: rgba(15, 15, 35, 0.92);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app.light {
+  --bg-primary: #e8ecf1;
+  --bg-secondary: rgba(255, 255, 255, 0.75);
+  --bg-card: rgba(0, 0, 0, 0.04);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-primary: #1a1a2e;
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --text-muted: rgba(0, 0, 0, 0.35);
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --lyrics-bg: rgba(255, 255, 255, 0.75);
+  --lyrics-border: rgba(0, 0, 0, 0.08);
+  --btn-bg: rgba(0, 0, 0, 0.06);
+  --btn-hover: rgba(0, 0, 0, 0.12);
+  --dropdown-bg: rgba(255, 255, 255, 0.92);
+  --menu-bg: rgba(255, 255, 255, 0.95);
+  --aplayer-bg: rgba(255, 255, 255, 0.95);
+  --aplayer-text: #000;
+  --toast-bg: rgba(255, 255, 255, 0.92);
+}
+
+/* ===== 全局强压 Twikoo 样式 ===== */
+#twikoo-container,
+#twikoo-container *,
+.tk-comment,
+.tk-comment *,
+.tk-content,
+.tk-content *,
+.tk-nick,
+.tk-nick *,
+.tk-time,
+.tk-time *,
+.tk-input,
+.tk-input *,
+.tk-submit,
+.tk-submit *,
+.tk-reply,
+.tk-reply *,
+.tk-actions,
+.tk-actions *,
+.tk-like,
+.tk-like *,
+.tk-dislike,
+.tk-dislike *,
+.tk-btn,
+.tk-btn *,
+.tk-label,
+.tk-label *,
+.tk-count,
+.tk-count *,
+.tk-more,
+.tk-more *,
+.tk-pinned,
+.tk-pinned *,
+.tk-owner,
+.tk-owner *,
+.tk-comment .tk-content,
+.tk-comment .tk-nick,
+.tk-comment .tk-time,
+.tk-comment .tk-actions {
+  color: #1a1a2e !important;
+}
+
+.tk-btn {
+  background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 8px 20px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+}
+
+.tk-input,
+.tk-input textarea,
+.tk-input input {
+  background: #ffffff !important;
+  color: #1a1a2e !important;
+  border: 1px solid #d5dbe3 !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+}
+
+.tk-input::placeholder,
+.tk-input input::placeholder,
+.tk-input textarea::placeholder {
+  color: #aaa !important;
+}
+
+.tk-comment {
+  background: #f5f6f8 !important;
+  border-radius: 10px !important;
+  padding: 14px 18px !important;
+  margin-bottom: 12px !important;
+  border: 1px solid #e8ecf1 !important;
+}
+
+.tk-nick {
+  font-weight: 700 !important;
+}
+
+.tk-time {
+  color: #999 !important;
+}
+
+.tk-btn:hover {
+  transform: scale(1.03) !important;
+}
+
+.tk-submit {
+  background: #f5f6f8 !important;
+  border-radius: 10px !important;
+  padding: 16px !important;
+  border: 1px solid #e8ecf1 !important;
+}
+
+.tk-reply .tk-input {
+  background: #ffffff !important;
+  border: 1px solid #d5dbe3 !important;
+  border-radius: 6px !important;
+}
+
+.tk-count {
+  color: #888 !important;
+}
+
+.tk-more {
+  color: #2563eb !important;
+  cursor: pointer !important;
+}
+
+.tk-pinned {
+  background: #fff8e1 !important;
+}
+
+.tk-owner {
+  background: #e3f2fd !important;
+}
+
+/* ===== App 组件样式 ===== */
 .app {
   min-height: 100vh;
   background: var(--bg-primary);
