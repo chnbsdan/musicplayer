@@ -1,3 +1,46 @@
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: rgba(15, 15, 35, 0.75);
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #fff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --lyrics-bg: rgba(15, 15, 35, 0.75);
+  --lyrics-border: rgba(255, 255, 255, 0.08);
+  --btn-bg: rgba(255, 255, 255, 0.12);
+  --btn-hover: rgba(255, 255, 255, 0.25);
+  --dropdown-bg: rgba(20, 20, 40, 0.92);
+  --menu-bg: rgba(0, 0, 0, 0.9);
+  --aplayer-bg: rgba(255, 255, 255, 0.95);
+  --aplayer-text: #000;
+  --toast-bg: rgba(15, 15, 35, 0.92);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app.light {
+  --bg-primary: #e8ecf1;
+  --bg-secondary: rgba(255, 255, 255, 0.75);
+  --bg-card: rgba(0, 0, 0, 0.04);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-primary: #1a1a2e;
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --text-muted: rgba(0, 0, 0, 0.35);
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --lyrics-bg: rgba(255, 255, 255, 0.75);
+  --lyrics-border: rgba(0, 0, 0, 0.08);
+  --btn-bg: rgba(0, 0, 0, 0.06);
+  --btn-hover: rgba(0, 0, 0, 0.12);
+  --dropdown-bg: rgba(255, 255, 255, 0.92);
+  --menu-bg: rgba(255, 255, 255, 0.95);
+  --aplayer-bg: rgba(255, 255, 255, 0.95);
+  --aplayer-text: #000;
+  --toast-bg: rgba(255, 255, 255, 0.92);
+}
+
 * {
   margin: 0;
   padding: 0;
