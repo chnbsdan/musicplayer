@@ -36,10 +36,10 @@
       </svg>
     </a>
 
-    <!-- 页脚 -->
+    <!-- ===== 页脚 - 热聊区按钮绑定事件 ===== -->
     <footer class="footer">
       <span>© 2024 Music Player · Made with ♥</span>
-      <button @click="chatRef?.open()">💬 热聊区</button>
+      <button @click="openChat">💬 热聊区</button>
     </footer>
 
     <!-- 热聊区弹窗 -->
@@ -63,6 +63,16 @@ const capsuleRef = ref(null)
 const playerRef = ref(null)
 const lyricsRef = ref(null)
 const chatRef = ref(null)
+
+// ===== 打开热聊区 =====
+const openChat = () => {
+  console.log('🔥 点击热聊区按钮')
+  if (chatRef.value) {
+    chatRef.value.open()
+  } else {
+    console.warn('chatRef 未初始化')
+  }
+}
 
 // ===== 右键菜单事件处理 =====
 const handlePlayToggle = () => {
@@ -89,7 +99,6 @@ const handleVolDown = () => {
 
 const handleLoopToggle = () => {
   const mode = store.toggleLoopMode()
-  // 更新播放器循环模式
   if (playerRef.value?.aplayer) {
     playerRef.value.aplayer.options.loop = mode
   }
@@ -113,8 +122,12 @@ const handleFullscreen = () => {
 
 const handleClosePlayer = () => {
   playerRef.value?.pause()
-  playerRef.value?.close?.()
-  capsuleRef.value?.show?.()
+  if (playerRef.value?.close) {
+    playerRef.value.close()
+  }
+  if (capsuleRef.value?.show) {
+    capsuleRef.value.show()
+  }
 }
 
 // ===== 胶囊切换播放器 =====
@@ -142,6 +155,7 @@ onMounted(() => {
   store.loadTheme()
   window.addEventListener('capsule-toggle', onCapsuleToggle)
   window.addEventListener('playlist-switch', onPlaylistSwitch)
+  console.log('App 已挂载，chatRef:', chatRef.value)
 })
 
 onUnmounted(() => {
