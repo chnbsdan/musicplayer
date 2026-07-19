@@ -110,7 +110,8 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
+/* ===== 弹窗遮罩 ===== */
 #chat-modal {
   position: fixed;
   top: 0;
@@ -125,7 +126,7 @@ onUnmounted(() => {
   animation: chatFadeIn 0.25s ease;
 }
 
-.chat-modal-content {
+#chat-modal .chat-modal-content {
   background: #ffffff;
   border-radius: 16px;
   width: 92%;
@@ -138,7 +139,7 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-.chat-header {
+#chat-modal .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -148,13 +149,13 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.chat-header span {
+#chat-modal .chat-header span {
   font-weight: 700;
   color: #1a1a2e;
   font-size: 16px;
 }
 
-.chat-header button {
+#chat-modal .chat-header button {
   background: none;
   border: none;
   color: #999;
@@ -163,11 +164,11 @@ onUnmounted(() => {
   padding: 0 6px;
 }
 
-.chat-header button:hover {
+#chat-modal .chat-header button:hover {
   color: #ff4500;
 }
 
-.chat-tags {
+#chat-modal .chat-tags {
   padding: 12px 22px 8px 22px;
   border-bottom: 1px solid #eef1f5;
   display: flex;
@@ -177,7 +178,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.chat-tag {
+#chat-modal .chat-tag {
   display: inline-block;
   padding: 4px 14px;
   border-radius: 14px;
@@ -187,42 +188,42 @@ onUnmounted(() => {
   transition: transform 0.2s;
 }
 
-.chat-tag:nth-child(1) {
+#chat-modal .chat-tag:nth-child(1) {
   background: #fff5e6;
   color: #e67e22;
   border: 1px solid #fde8d0;
 }
-.chat-tag:nth-child(2) {
+#chat-modal .chat-tag:nth-child(2) {
   background: #e8f4fd;
   color: #2980b9;
   border: 1px solid #d4e8f5;
 }
-.chat-tag:nth-child(3) {
+#chat-modal .chat-tag:nth-child(3) {
   background: #e8f8ed;
   color: #27ae60;
   border: 1px solid #d0f0dc;
 }
-.chat-tag:nth-child(4) {
+#chat-modal .chat-tag:nth-child(4) {
   background: #fef9e7;
   color: #d4a017;
   border: 1px solid #fcf3d0;
 }
-.chat-tag:nth-child(5) {
+#chat-modal .chat-tag:nth-child(5) {
   background: #fde8ef;
   color: #c0392b;
   border: 1px solid #fad0db;
 }
-.chat-tag:nth-child(6) {
+#chat-modal .chat-tag:nth-child(6) {
   background: #ede7f6;
   color: #7b1fa2;
   border: 1px solid #ddd0eb;
 }
 
-.chat-tag:hover {
+#chat-modal .chat-tag:hover {
   transform: scale(1.04);
 }
 
-.chat-body {
+#chat-modal .chat-body {
   padding: 16px 22px 22px 22px;
   flex: 1;
   overflow-y: auto;
@@ -241,52 +242,28 @@ onUnmounted(() => {
   }
 }
 
-/* ===== 直接暴力覆盖 Twikoo 所有文字 ===== */
-:deep(#twikoo-container) {
+/* ===== 核心修复：用 #chat-modal 限定作用域，强制覆盖 Twikoo 所有文字 ===== */
+
+/* 1. 先重置 Twikoo 容器内所有文字为黑色 */
+#chat-modal #twikoo-container,
+#chat-modal #twikoo-container * {
   color: #1a1a2e !important;
 }
 
-:deep(#twikoo-container .tk-input) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-input::placeholder) {
+/* 2. 例外：占位符用灰色 */
+#chat-modal #twikoo-container .tk-input::placeholder,
+#chat-modal #twikoo-container input::placeholder,
+#chat-modal #twikoo-container textarea::placeholder {
   color: #aaa !important;
 }
 
-:deep(#twikoo-container textarea) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container input) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container input::placeholder) {
-  color: #aaa !important;
-}
-
-:deep(#twikoo-container label) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-label) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-nick) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-content) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-time) {
+/* 3. 时间用灰色 */
+#chat-modal #twikoo-container .tk-time {
   color: #999 !important;
 }
 
-:deep(#twikoo-container .tk-comment) {
+/* 4. 评论卡片背景 */
+#chat-modal #twikoo-container .tk-comment {
   background: #f5f6f8 !important;
   border-radius: 10px !important;
   padding: 14px 18px !important;
@@ -294,40 +271,37 @@ onUnmounted(() => {
   border: 1px solid #e8ecf1 !important;
 }
 
-:deep(#twikoo-container .tk-comment .tk-nick) {
-  color: #1a1a2e !important;
+/* 5. 昵称加粗 */
+#chat-modal #twikoo-container .tk-comment .tk-nick {
   font-weight: 700 !important;
 }
 
-:deep(#twikoo-container .tk-comment .tk-content) {
-  color: #1a1a2e !important;
+/* 6. 评论内容 */
+#chat-modal #twikoo-container .tk-comment .tk-content {
   line-height: 1.8 !important;
 }
 
-:deep(#twikoo-container .tk-comment .tk-time) {
-  color: #999 !important;
-}
-
-:deep(#twikoo-container .tk-submit) {
+/* 7. 提交区 */
+#chat-modal #twikoo-container .tk-submit {
   background: #f5f6f8 !important;
   border-radius: 10px !important;
   padding: 16px !important;
   border: 1px solid #e8ecf1 !important;
 }
 
-:deep(#twikoo-container .tk-submit .tk-input) {
+#chat-modal #twikoo-container .tk-submit .tk-input {
   background: #ffffff !important;
-  color: #1a1a2e !important;
   border: 1px solid #d5dbe3 !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
 }
 
-:deep(#twikoo-container .tk-submit .tk-input:focus) {
+#chat-modal #twikoo-container .tk-submit .tk-input:focus {
   border-color: #ff8c00 !important;
 }
 
-:deep(#twikoo-container .tk-submit .tk-btn) {
+/* 8. 提交按钮 */
+#chat-modal #twikoo-container .tk-submit .tk-btn {
   background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
   color: #ffffff !important;
   border: none !important;
@@ -337,18 +311,18 @@ onUnmounted(() => {
   cursor: pointer !important;
 }
 
-:deep(#twikoo-container .tk-submit .tk-btn:hover) {
+#chat-modal #twikoo-container .tk-submit .tk-btn:hover {
   transform: scale(1.03) !important;
 }
 
-:deep(#twikoo-container .tk-reply .tk-input) {
+/* 9. 回复区 */
+#chat-modal #twikoo-container .tk-reply .tk-input {
   background: #ffffff !important;
-  color: #1a1a2e !important;
   border: 1px solid #d5dbe3 !important;
   border-radius: 6px !important;
 }
 
-:deep(#twikoo-container .tk-reply .tk-btn) {
+#chat-modal #twikoo-container .tk-reply .tk-btn {
   background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
   color: #ffffff !important;
   border: none !important;
@@ -357,34 +331,21 @@ onUnmounted(() => {
   cursor: pointer !important;
 }
 
-:deep(#twikoo-container .tk-count) {
+/* 10. 其他 */
+#chat-modal #twikoo-container .tk-count {
   color: #888 !important;
 }
 
-:deep(#twikoo-container .tk-more) {
+#chat-modal #twikoo-container .tk-more {
   color: #2563eb !important;
   cursor: pointer !important;
 }
 
-:deep(#twikoo-container .tk-pinned) {
+#chat-modal #twikoo-container .tk-pinned {
   background: #fff8e1 !important;
-  color: #1a1a2e !important;
 }
 
-:deep(#twikoo-container .tk-owner) {
+#chat-modal #twikoo-container .tk-owner {
   background: #e3f2fd !important;
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-actions) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-like) {
-  color: #1a1a2e !important;
-}
-
-:deep(#twikoo-container .tk-dislike) {
-  color: #1a1a2e !important;
 }
 </style>
