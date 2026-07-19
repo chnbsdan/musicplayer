@@ -1,7 +1,7 @@
 <template>
-  <div class="app" :class="{ light: themeStore.isLight }">
+  <div class="app" :class="{ light: store.isLight }">
     <!-- 音乐胶囊 -->
-    <Capsule />
+    <Capsule ref="capsuleRef" />
 
     <!-- 右下角按钮组 -->
     <div class="right-buttons">
@@ -10,13 +10,24 @@
     </div>
 
     <!-- 歌词窗口 -->
-    <Lyrics />
+    <Lyrics ref="lyricsRef" />
 
     <!-- 播放器 -->
-    <Player />
+    <Player ref="playerRef" />
 
     <!-- 右键菜单 -->
-    <RightMenu />
+    <RightMenu 
+      @play-toggle="handlePlayToggle"
+      @prev="handlePrev"
+      @next="handleNext"
+      @vol-up="handleVolUp"
+      @vol-down="handleVolDown"
+      @loop-toggle="handleLoopToggle"
+      @lyrics-toggle="handleLyricsToggle"
+      @support="handleSupport"
+      @fullscreen="handleFullscreen"
+      @close-player="handleClosePlayer"
+    />
 
     <!-- GitHub 角标 -->
     <a href="https://github.com/chnbsdan/edgetunnel" target="_blank" class="github-corner">
@@ -28,18 +39,17 @@
     <!-- 页脚 -->
     <footer class="footer">
       <span>© 2024 Music Player · Made with ♥</span>
-      <button @click="chatStore.open">💬 热聊区</button>
+      <button @click="chatRef?.open()">💬 热聊区</button>
     </footer>
 
     <!-- 热聊区弹窗 -->
-    <Chat />
+    <Chat ref="chatRef" />
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
-import { useThemeStore } from './stores/playerStore'
-import { useChatStore } from './stores/playerStore'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { usePlayerStore } from './stores/playerStore'
 import Capsule from './components/Capsule.vue'
 import Player from './components/Player.vue'
 import Lyrics from './components/Lyrics.vue'
@@ -48,15 +58,95 @@ import ThemeToggle from './components/ThemeToggle.vue'
 import RightMenu from './components/RightMenu.vue'
 import Chat from './components/Chat.vue'
 
-const themeStore = useThemeStore()
-const chatStore = useChatStore()
+const store = usePlayerStore()
+const capsuleRef = ref(null)
+const playerRef = ref(null)
+const lyricsRef = ref(null)
+const chatRef = ref(null)
+
+// ===== 右键菜单事件处理 =====
+const handlePlayToggle = () => {
+  playerRef.value?.toggle()
+}
+
+const handlePrev = () => {
+  playerRef.value?.prev()
+}
+
+const handleNext = () => {
+  playerRef.value?.next()
+}
+
+const handleVolUp = () => {
+  const currentVol = store.volume
+  store.setVolume(Math.min(currentVol + 0.1, 1))
+}
+
+const handleVolDown = () => {
+  const currentVol = store.volume
+  store.setVolume(Math.max(currentVol - 0.1, 0))
+}
+
+const handleLoopToggle = () => {
+  const mode = store.toggleLoopMode()
+  // 更新播放器循环模式
+  if (playerRef.value?.aplayer) {
+    playerRef.value.aplayer.options.loop = mode
+  }
+}
+
+const handleLyricsToggle = () => {
+  lyricsRef.value?.toggleVisibility()
+}
+
+const handleSupport = () => {
+  window.open('https://1356666.xyz', '_blank')
+}
+
+const handleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {})
+  } else {
+    document.exitFullscreen().catch(() => {})
+  }
+}
+
+const handleClosePlayer = () => {
+  playerRef.value?.pause()
+  playerRef.value?.close?.()
+  capsuleRef.value?.show?.()
+}
+
+// ===== 胶囊切换播放器 =====
+const onCapsuleToggle = () => {
+  if (playerRef.value?.isOpen) {
+    playerRef.value.close?.()
+    capsuleRef.value?.show?.()
+  } else {
+    capsuleRef.value?.hide?.()
+    playerRef.value?.open?.()
+    playerRef.value?.init?.()
+  }
+}
+
+// ===== 歌单切换自动展开 =====
+const onPlaylistSwitch = (e) => {
+  const id = e.detail?.id
+  if (id) {
+    playerRef.value?.open?.()
+    playerRef.value?.loadPlaylist?.(id)
+  }
+}
 
 onMounted(() => {
-  themeStore.loadTheme()
+  store.loadTheme()
+  window.addEventListener('capsule-toggle', onCapsuleToggle)
+  window.addEventListener('playlist-switch', onPlaylistSwitch)
 })
 
 onUnmounted(() => {
-  // 清理
+  window.removeEventListener('capsule-toggle', onCapsuleToggle)
+  window.removeEventListener('playlist-switch', onPlaylistSwitch)
 })
 </script>
 
