@@ -6,3 +6,4 @@ import './styles/base.css'
 const app = createApp(App)
 app.use(createPinia())
 app.mount('#app')
+ 
