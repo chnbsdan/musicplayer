@@ -11,7 +11,7 @@
             {{ tag.label }}
           </span>
         </div>
-        <div class="chat-body" id="chat-body">
+        <div class="chat-body">
           <div id="twikoo-container" ref="containerRef"></div>
         </div>
       </div>
@@ -41,7 +41,7 @@ const open = () => {
   isOpen.value = true
   document.body.style.overflow = 'hidden'
   nextTick(() => {
-    setTimeout(initTwikoo, 500)
+    setTimeout(initTwikoo, 300)
   })
 }
 
@@ -75,7 +75,7 @@ const initTwikoo = () => {
 
   if (typeof twikoo === 'undefined') {
     const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.7.14/dist/twikoo.min.js'
+    script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.min.js'
     script.onload = () => initTwikoo()
     document.head.appendChild(script)
     return
@@ -89,6 +89,7 @@ const initTwikoo = () => {
       region: 'ap-guangzhou'
     })
     isInitialized = true
+    console.log('✅ Twikoo 初始化成功')
   } catch (e) {
     console.warn('Twikoo init error:', e)
     containerRef.value.innerHTML = `<div style="padding:40px;text-align:center;color:#666;">评论加载失败</div>`
@@ -110,8 +111,7 @@ onUnmounted(() => {
 })
 </script>
 
-<style>
-/* ===== 弹窗遮罩 ===== */
+<style scoped>
 #chat-modal {
   position: fixed;
   top: 0;
@@ -126,7 +126,7 @@ onUnmounted(() => {
   animation: chatFadeIn 0.25s ease;
 }
 
-#chat-modal .chat-modal-content {
+.chat-modal-content {
   background: #ffffff;
   border-radius: 16px;
   width: 92%;
@@ -139,7 +139,7 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-#chat-modal .chat-header {
+.chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -149,13 +149,13 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-#chat-modal .chat-header span {
+.chat-header span {
   font-weight: 700;
   color: #1a1a2e;
   font-size: 16px;
 }
 
-#chat-modal .chat-header button {
+.chat-header button {
   background: none;
   border: none;
   color: #999;
@@ -164,11 +164,11 @@ onUnmounted(() => {
   padding: 0 6px;
 }
 
-#chat-modal .chat-header button:hover {
+.chat-header button:hover {
   color: #ff4500;
 }
 
-#chat-modal .chat-tags {
+.chat-tags {
   padding: 12px 22px 8px 22px;
   border-bottom: 1px solid #eef1f5;
   display: flex;
@@ -178,7 +178,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-#chat-modal .chat-tag {
+.chat-tag {
   display: inline-block;
   padding: 4px 14px;
   border-radius: 14px;
@@ -188,42 +188,42 @@ onUnmounted(() => {
   transition: transform 0.2s;
 }
 
-#chat-modal .chat-tag:nth-child(1) {
+.chat-tag:nth-child(1) {
   background: #fff5e6;
   color: #e67e22;
   border: 1px solid #fde8d0;
 }
-#chat-modal .chat-tag:nth-child(2) {
+.chat-tag:nth-child(2) {
   background: #e8f4fd;
   color: #2980b9;
   border: 1px solid #d4e8f5;
 }
-#chat-modal .chat-tag:nth-child(3) {
+.chat-tag:nth-child(3) {
   background: #e8f8ed;
   color: #27ae60;
   border: 1px solid #d0f0dc;
 }
-#chat-modal .chat-tag:nth-child(4) {
+.chat-tag:nth-child(4) {
   background: #fef9e7;
   color: #d4a017;
   border: 1px solid #fcf3d0;
 }
-#chat-modal .chat-tag:nth-child(5) {
+.chat-tag:nth-child(5) {
   background: #fde8ef;
   color: #c0392b;
   border: 1px solid #fad0db;
 }
-#chat-modal .chat-tag:nth-child(6) {
+.chat-tag:nth-child(6) {
   background: #ede7f6;
   color: #7b1fa2;
   border: 1px solid #ddd0eb;
 }
 
-#chat-modal .chat-tag:hover {
+.chat-tag:hover {
   transform: scale(1.04);
 }
 
-#chat-modal .chat-body {
+.chat-body {
   padding: 16px 22px 22px 22px;
   flex: 1;
   overflow-y: auto;
@@ -240,112 +240,5 @@ onUnmounted(() => {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-/* ===== 核心修复：用 #chat-modal 限定作用域，强制覆盖 Twikoo 所有文字 ===== */
-
-/* 1. 先重置 Twikoo 容器内所有文字为黑色 */
-#chat-modal #twikoo-container,
-#chat-modal #twikoo-container * {
-  color: #1a1a2e !important;
-}
-
-/* 2. 例外：占位符用灰色 */
-#chat-modal #twikoo-container .tk-input::placeholder,
-#chat-modal #twikoo-container input::placeholder,
-#chat-modal #twikoo-container textarea::placeholder {
-  color: #aaa !important;
-}
-
-/* 3. 时间用灰色 */
-#chat-modal #twikoo-container .tk-time {
-  color: #999 !important;
-}
-
-/* 4. 评论卡片背景 */
-#chat-modal #twikoo-container .tk-comment {
-  background: #f5f6f8 !important;
-  border-radius: 10px !important;
-  padding: 14px 18px !important;
-  margin-bottom: 12px !important;
-  border: 1px solid #e8ecf1 !important;
-}
-
-/* 5. 昵称加粗 */
-#chat-modal #twikoo-container .tk-comment .tk-nick {
-  font-weight: 700 !important;
-}
-
-/* 6. 评论内容 */
-#chat-modal #twikoo-container .tk-comment .tk-content {
-  line-height: 1.8 !important;
-}
-
-/* 7. 提交区 */
-#chat-modal #twikoo-container .tk-submit {
-  background: #f5f6f8 !important;
-  border-radius: 10px !important;
-  padding: 16px !important;
-  border: 1px solid #e8ecf1 !important;
-}
-
-#chat-modal #twikoo-container .tk-submit .tk-input {
-  background: #ffffff !important;
-  border: 1px solid #d5dbe3 !important;
-  border-radius: 8px !important;
-  padding: 10px 14px !important;
-}
-
-#chat-modal #twikoo-container .tk-submit .tk-input:focus {
-  border-color: #ff8c00 !important;
-}
-
-/* 8. 提交按钮 */
-#chat-modal #twikoo-container .tk-submit .tk-btn {
-  background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 8px 24px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-}
-
-#chat-modal #twikoo-container .tk-submit .tk-btn:hover {
-  transform: scale(1.03) !important;
-}
-
-/* 9. 回复区 */
-#chat-modal #twikoo-container .tk-reply .tk-input {
-  background: #ffffff !important;
-  border: 1px solid #d5dbe3 !important;
-  border-radius: 6px !important;
-}
-
-#chat-modal #twikoo-container .tk-reply .tk-btn {
-  background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 6px !important;
-  padding: 6px 16px !important;
-  cursor: pointer !important;
-}
-
-/* 10. 其他 */
-#chat-modal #twikoo-container .tk-count {
-  color: #888 !important;
-}
-
-#chat-modal #twikoo-container .tk-more {
-  color: #2563eb !important;
-  cursor: pointer !important;
-}
-
-#chat-modal #twikoo-container .tk-pinned {
-  background: #fff8e1 !important;
-}
-
-#chat-modal #twikoo-container .tk-owner {
-  background: #e3f2fd !important;
 }
 </style>
