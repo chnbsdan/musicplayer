@@ -1,5 +1,4 @@
 <template>
-  <!-- 热聊区弹窗 - 用 Teleport 放到 body 根节点 -->
   <Teleport to="body">
     <div id="chat-modal" ref="modalRef" :style="{ display: isOpen ? 'flex' : 'none' }" @click="onBackdropClick">
       <div class="chat-modal-content" @click.stop>
@@ -12,9 +11,9 @@
             {{ tag.label }}
           </span>
         </div>
-        <div class="chat-body" id="chat-body">
+        <div class="chat-body">
           <div id="twikoo-container" ref="containerRef">
-            <div style="text-align:center;padding:40px 0;color:var(--text-secondary);">
+            <div style="text-align:center;padding:40px 0;color:#666;">
               <span style="font-size:24px;">💬</span>
               <p style="margin-top:12px;">加载评论中...</p>
             </div>
@@ -43,12 +42,10 @@ const tags = [
   { label: '🌙 深夜歌单', text: '求推荐适合深夜听的歌' }
 ]
 
-// ===== 打开弹窗 =====
 const open = () => {
   console.log('🔥 热聊区打开')
   isOpen.value = true
   document.body.style.overflow = 'hidden'
-  
   nextTick(() => {
     setTimeout(() => {
       initTwikoo()
@@ -56,7 +53,6 @@ const open = () => {
   })
 }
 
-// ===== 关闭弹窗 =====
 const close = () => {
   console.log('🔥 热聊区关闭')
   isOpen.value = false
@@ -67,12 +63,10 @@ const toggle = () => {
   isOpen.value ? close() : open()
 }
 
-// ===== 点击背景关闭 =====
 const onBackdropClick = (e) => {
   if (e.target === modalRef.value) close()
 }
 
-// ===== 点击话题标签 =====
 const fillTag = (text) => {
   if (!isOpen.value) open()
   setTimeout(() => {
@@ -94,38 +88,24 @@ const fillTag = (text) => {
   }, 600)
 }
 
-// ===== 初始化 Twikoo =====
 const initTwikoo = () => {
-  if (isInitialized) {
-    console.log('Twikoo 已初始化，跳过')
-    return
-  }
-  
-  if (!containerRef.value) {
-    console.warn('Twikoo 容器不存在')
-    return
-  }
+  if (isInitialized) return
+  if (!containerRef.value) return
 
-  // 检查 Twikoo 库
   if (typeof twikoo === 'undefined') {
-    console.warn('Twikoo 库未加载，动态加载...')
     const script = document.createElement('script')
     script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.js'
     script.onload = () => {
-      console.log('Twikoo 库加载完成')
       initTwikoo()
     }
     script.onerror = () => {
-      console.error('Twikoo 库加载失败')
-      if (containerRef.value) {
-        containerRef.value.innerHTML = `
-          <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
-            <span style="font-size:32px;">😅</span>
-            <p style="margin-top:12px;">评论服务加载失败</p>
-            <button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);cursor:pointer;">刷新重试</button>
-          </div>
-        `
-      }
+      containerRef.value.innerHTML = `
+        <div style="text-align:center;padding:40px 20px;color:#666;">
+          <span style="font-size:32px;">😅</span>
+          <p style="margin-top:12px;">评论服务加载失败</p>
+          <button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;">刷新重试</button>
+        </div>
+      `
     }
     document.head.appendChild(script)
     return
@@ -141,29 +121,24 @@ const initTwikoo = () => {
     isInitialized = true
     console.log('✅ Twikoo 初始化成功')
   } catch (e) {
-    console.warn('Twikoo 初始化失败:', e)
     containerRef.value.innerHTML = `
-      <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+      <div style="text-align:center;padding:40px 20px;color:#666;">
         <span style="font-size:32px;">😅</span>
         <p style="margin-top:12px;">评论加载失败: ${e.message}</p>
-        <button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);cursor:pointer;">刷新重试</button>
+        <button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;color:#333;cursor:pointer;">刷新重试</button>
       </div>
     `
   }
 }
 
-// ===== 键盘关闭 =====
 const onKeydown = (e) => {
   if (e.key === 'Escape' && isOpen.value) close()
 }
 
-// ===== 暴露方法 =====
 defineExpose({ open, close, toggle })
 
-// ===== 生命周期 =====
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
-  console.log('Chat 组件已挂载')
 })
 
 onUnmounted(() => {
@@ -191,22 +166,16 @@ onUnmounted(() => {
 /* ===== 弹窗内容 ===== */
 .chat-modal-content {
   background: #ffffff;
-  border-radius: var(--radius, 16px);
+  border-radius: 16px;
   width: 92%;
   max-width: 640px;
   max-height: 85vh;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8ecf1;
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
-}
-
-/* 暗色主题适配 */
-:deep(.app:not(.light)) .chat-modal-content {
-  background: #1a1a2e;
-  border-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ===== 标题栏 ===== */
@@ -220,19 +189,10 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-:deep(.app:not(.light)) .chat-header {
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
 .chat-header span {
   font-weight: 700;
   color: #1a1a2e;
   font-size: 16px;
-}
-
-:deep(.app:not(.light)) .chat-header span {
-  color: #e8eaf6;
 }
 
 .chat-header button {
@@ -250,10 +210,6 @@ onUnmounted(() => {
   color: #ff4500;
 }
 
-:deep(.app:not(.light)) .chat-header button {
-  color: rgba(255, 255, 255, 0.4);
-}
-
 /* ===== 话题标签 ===== */
 .chat-tags {
   padding: 12px 22px 8px 22px;
@@ -265,11 +221,6 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-:deep(.app:not(.light)) .chat-tags {
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom-color: rgba(255, 255, 255, 0.04);
-}
-
 .chat-tag {
   display: inline-block;
   padding: 4px 14px;
@@ -278,6 +229,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s;
   user-select: none;
+  font-weight: 500;
 }
 
 .chat-tag:nth-child(1) {
@@ -315,16 +267,6 @@ onUnmounted(() => {
   transform: scale(1.04);
 }
 
-:deep(.app:not(.light)) .chat-tag {
-  background: rgba(255, 255, 255, 0.08);
-  color: #e8eaf6;
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-:deep(.app:not(.light)) .chat-tag:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
 /* ===== 评论主体 ===== */
 .chat-body {
   padding: 16px 22px 22px 22px;
@@ -332,10 +274,6 @@ onUnmounted(() => {
   overflow-y: auto;
   max-height: calc(85vh - 150px);
   background: #ffffff;
-}
-
-:deep(.app:not(.light)) .chat-body {
-  background: transparent;
 }
 
 /* ===== 动画 ===== */
@@ -350,14 +288,14 @@ onUnmounted(() => {
   }
 }
 
-/* ===== Twikoo 样式覆盖 ===== */
+/* ===== Twikoo 样式覆盖 - 全部黑色文字 ===== */
 :deep(#twikoo-container) {
   color: #1a1a2e !important;
   font-family: inherit !important;
 }
 
 :deep(#twikoo-container .tk-comment) {
-  background: #f8f9fa !important;
+  background: #f5f6f8 !important;
   border-radius: 10px !important;
   padding: 14px 18px !important;
   margin-bottom: 12px !important;
@@ -365,8 +303,8 @@ onUnmounted(() => {
 }
 
 :deep(#twikoo-container .tk-comment .tk-nick) {
-  color: #2563eb !important;
-  font-weight: 600 !important;
+  color: #1a1a2e !important;
+  font-weight: 700 !important;
   font-size: 14px !important;
 }
 
@@ -382,7 +320,7 @@ onUnmounted(() => {
 }
 
 :deep(#twikoo-container .tk-submit) {
-  background: #f8f9fa !important;
+  background: #f5f6f8 !important;
   border-radius: 10px !important;
   padding: 16px !important;
   border: 1px solid #e8ecf1 !important;
@@ -397,6 +335,10 @@ onUnmounted(() => {
   font-size: 14px !important;
 }
 
+:deep(#twikoo-container .tk-submit .tk-input::placeholder) {
+  color: #aaa !important;
+}
+
 :deep(#twikoo-container .tk-submit .tk-input:focus) {
   border-color: #ff8c00 !important;
   box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.12) !important;
@@ -404,7 +346,7 @@ onUnmounted(() => {
 
 :deep(#twikoo-container .tk-submit .tk-btn) {
   background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
-  color: #fff !important;
+  color: #ffffff !important;
   border: none !important;
   border-radius: 8px !important;
   padding: 8px 24px !important;
@@ -417,28 +359,26 @@ onUnmounted(() => {
   box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3) !important;
 }
 
-/* 暗色主题适配 */
-:deep(.app:not(.light) #twikoo-container .tk-comment) {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+:deep(#twikoo-container .tk-count) {
+  color: #888 !important;
 }
 
-:deep(.app:not(.light) #twikoo-container .tk-comment .tk-content) {
-  color: #e8eaf6 !important;
+:deep(#twikoo-container .tk-reply) {
+  color: #1a1a2e !important;
 }
 
-:deep(.app:not(.light) #twikoo-container .tk-comment .tk-nick) {
-  color: #4facfe !important;
+:deep(#twikoo-container .tk-reply .tk-input) {
+  background: #ffffff !important;
+  color: #1a1a2e !important;
+  border: 1px solid #d5dbe3 !important;
 }
 
-:deep(.app:not(.light) #twikoo-container .tk-submit) {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-:deep(.app:not(.light) #twikoo-container .tk-submit .tk-input) {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #e8eaf6 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+:deep(#twikoo-container .tk-reply .tk-btn) {
+  background: linear-gradient(135deg, #ff8c00, #ff4500) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 6px 16px !important;
+  cursor: pointer !important;
 }
 </style>
