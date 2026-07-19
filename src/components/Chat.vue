@@ -1,7 +1,7 @@
 <template>
-  <!-- 热聊区弹窗 - 独立于页面内容 -->
+  <!-- 热聊区弹窗 - 用 Teleport 放到 body 根节点 -->
   <Teleport to="body">
-    <div id="chat-modal" ref="modalRef" v-show="isOpen" @click="onBackdropClick">
+    <div id="chat-modal" ref="modalRef" :style="{ display: isOpen ? 'flex' : 'none' }" @click="onBackdropClick">
       <div class="chat-modal-content" @click.stop>
         <div class="chat-header">
           <span>💬 热聊区 · 音乐交流</span>
@@ -13,7 +13,12 @@
           </span>
         </div>
         <div class="chat-body" id="chat-body">
-          <div id="twikoo-container" ref="containerRef"></div>
+          <div id="twikoo-container" ref="containerRef">
+            <div style="text-align:center;padding:40px 0;color:var(--text-secondary);">
+              <span style="font-size:24px;">💬</span>
+              <p style="margin-top:12px;">加载评论中...</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -40,19 +45,20 @@ const tags = [
 
 // ===== 打开弹窗 =====
 const open = () => {
+  console.log('🔥 热聊区打开')
   isOpen.value = true
   document.body.style.overflow = 'hidden'
   
-  // 确保 Twikoo 容器存在并初始化
   nextTick(() => {
     setTimeout(() => {
       initTwikoo()
-    }, 300)
+    }, 500)
   })
 }
 
 // ===== 关闭弹窗 =====
 const close = () => {
+  console.log('🔥 热聊区关闭')
   isOpen.value = false
   document.body.style.overflow = ''
 }
@@ -68,7 +74,7 @@ const onBackdropClick = (e) => {
 
 // ===== 点击话题标签 =====
 const fillTag = (text) => {
-  open()
+  if (!isOpen.value) open()
   setTimeout(() => {
     const input = document.querySelector('#twikoo-container .tk-input textarea')
     if (input) {
@@ -76,7 +82,6 @@ const fillTag = (text) => {
       input.focus()
       input.dispatchEvent(new Event('input'))
     } else {
-      // 如果还没加载，等1秒再试
       setTimeout(() => {
         const input2 = document.querySelector('#twikoo-container .tk-input textarea')
         if (input2) {
@@ -91,32 +96,43 @@ const fillTag = (text) => {
 
 // ===== 初始化 Twikoo =====
 const initTwikoo = () => {
-  // 如果已经初始化了，不再重复初始化
-  if (isInitialized) return
+  if (isInitialized) {
+    console.log('Twikoo 已初始化，跳过')
+    return
+  }
   
-  // 检查容器是否存在
   if (!containerRef.value) {
     console.warn('Twikoo 容器不存在')
     return
   }
 
-  // 检查 Twikoo 库是否加载
+  // 检查 Twikoo 库
   if (typeof twikoo === 'undefined') {
-    console.warn('Twikoo 库未加载，尝试重新加载...')
-    // 动态加载 Twikoo
+    console.warn('Twikoo 库未加载，动态加载...')
     const script = document.createElement('script')
     script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.js'
     script.onload = () => {
+      console.log('Twikoo 库加载完成')
       initTwikoo()
+    }
+    script.onerror = () => {
+      console.error('Twikoo 库加载失败')
+      if (containerRef.value) {
+        containerRef.value.innerHTML = `
+          <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+            <span style="font-size:32px;">😅</span>
+            <p style="margin-top:12px;">评论服务加载失败</p>
+            <button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);cursor:pointer;">刷新重试</button>
+          </div>
+        `
+      }
     }
     document.head.appendChild(script)
     return
   }
 
   try {
-    // 清空容器
     containerRef.value.innerHTML = ''
-    
     twikooInstance = twikoo.init({
       el: containerRef.value,
       envId: 'https://twikoo.hangdn.com',
@@ -129,8 +145,7 @@ const initTwikoo = () => {
     containerRef.value.innerHTML = `
       <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
         <span style="font-size:32px;">😅</span>
-        <p style="margin-top:12px;">评论加载失败</p>
-        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">${e.message || '请检查网络'}</p>
+        <p style="margin-top:12px;">评论加载失败: ${e.message}</p>
         <button onclick="location.reload()" style="margin-top:16px;padding:8px 24px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);cursor:pointer;">刷新重试</button>
       </div>
     `
@@ -148,6 +163,7 @@ defineExpose({ open, close, toggle })
 // ===== 生命周期 =====
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  console.log('Chat 组件已挂载')
 })
 
 onUnmounted(() => {
@@ -167,14 +183,9 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  display: none;
   align-items: center;
   justify-content: center;
   animation: chatFadeIn 0.25s ease;
-}
-
-#chat-modal[v-show="true"] {
-  display: flex;
 }
 
 /* ===== 弹窗内容 ===== */
