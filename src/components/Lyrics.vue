@@ -66,7 +66,7 @@ const show = (text, nextText) => {
       display: inline-block !important;
       overflow: hidden;
       white-space: nowrap;
-      animation: typing 2s steps(40, end);
+      animation: typing 4s steps(40, end);
       animation-fill-mode: both;
     `
     span.textContent = text
@@ -613,7 +613,7 @@ defineExpose({
   display: inline-block !important;
   overflow: hidden;
   white-space: nowrap;
-  animation: typing 2s steps(40, end);
+  animation: typing 4s steps(40, end);
   animation-fill-mode: both;
 }
 
