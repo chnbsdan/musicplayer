@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/musicplayer/',  // ← 加这行，仓库名是什么就写什么
+  base: '/',  // ← 改成 '/'，不要带仓库名
   server: {
     port: 3000,
     host: true
