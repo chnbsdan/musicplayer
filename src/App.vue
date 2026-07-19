@@ -236,6 +236,19 @@ body {
   --toast-bg: rgba(255, 255, 255, 0.92);
 }
 
+/* ===== 播放器样式覆盖 ===== */
+.aplayer .aplayer-info .aplayer-music .aplayer-title {
+  color: #1a1a2e !important;
+}
+
+.aplayer .aplayer-list ol li .aplayer-list-title {
+  color: #1a1a2e !important;
+}
+
+.aplayer .aplayer-list ol li {
+  color: #1a1a2e !important;
+}
+
 /* ===== 全局强压 Twikoo 样式 ===== */
 #twikoo-container,
 #twikoo-container *,
