@@ -11,7 +11,7 @@
             {{ tag.label }}
           </span>
         </div>
-        <div class="chat-body">
+        <div class="chat-body" id="chat-body">
           <div id="twikoo-container" ref="containerRef"></div>
         </div>
       </div>
@@ -241,55 +241,49 @@ onUnmounted(() => {
   }
 }
 
-/* ===== 强制所有 Twikoo 文字为黑色 ===== */
-:deep(#twikoo-container),
-:deep(#twikoo-container *),
-:deep(#twikoo-container .tk-comment),
-:deep(#twikoo-container .tk-comment *),
-:deep(#twikoo-container .tk-content),
-:deep(#twikoo-container .tk-content *),
-:deep(#twikoo-container .tk-nick),
-:deep(#twikoo-container .tk-nick *),
-:deep(#twikoo-container .tk-time),
-:deep(#twikoo-container .tk-time *),
-:deep(#twikoo-container .tk-input),
-:deep(#twikoo-container .tk-input *),
-:deep(#twikoo-container .tk-submit),
-:deep(#twikoo-container .tk-submit *),
-:deep(#twikoo-container .tk-reply),
-:deep(#twikoo-container .tk-reply *),
-:deep(#twikoo-container .tk-count),
-:deep(#twikoo-container .tk-count *),
-:deep(#twikoo-container .tk-more),
-:deep(#twikoo-container .tk-more *),
-:deep(#twikoo-container .tk-label),
-:deep(#twikoo-container .tk-label *),
-:deep(#twikoo-container .tk-actions),
-:deep(#twikoo-container .tk-actions *),
-:deep(#twikoo-container .tk-like),
-:deep(#twikoo-container .tk-like *),
-:deep(#twikoo-container .tk-dislike),
-:deep(#twikoo-container .tk-dislike *),
-:deep(#twikoo-container .tk-owner),
-:deep(#twikoo-container .tk-owner *),
-:deep(#twikoo-container .tk-pinned),
-:deep(#twikoo-container .tk-pinned *),
-:deep(#twikoo-container a),
-:deep(#twikoo-container a *),
-:deep(#twikoo-container span),
-:deep(#twikoo-container div),
-:deep(#twikoo-container p),
-:deep(#twikoo-container h1),
-:deep(#twikoo-container h2),
-:deep(#twikoo-container h3),
-:deep(#twikoo-container h4),
-:deep(#twikoo-container h5),
-:deep(#twikoo-container h6),
-:deep(#twikoo-container button),
-:deep(#twikoo-container button *),
-:deep(#twikoo-container .tk-btn),
-:deep(#twikoo-container .tk-btn *) {
+/* ===== 直接暴力覆盖 Twikoo 所有文字 ===== */
+:deep(#twikoo-container) {
   color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-input) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-input::placeholder) {
+  color: #aaa !important;
+}
+
+:deep(#twikoo-container textarea) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container input) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container input::placeholder) {
+  color: #aaa !important;
+}
+
+:deep(#twikoo-container label) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-label) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-nick) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-content) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-time) {
+  color: #999 !important;
 }
 
 :deep(#twikoo-container .tk-comment) {
@@ -298,6 +292,20 @@ onUnmounted(() => {
   padding: 14px 18px !important;
   margin-bottom: 12px !important;
   border: 1px solid #e8ecf1 !important;
+}
+
+:deep(#twikoo-container .tk-comment .tk-nick) {
+  color: #1a1a2e !important;
+  font-weight: 700 !important;
+}
+
+:deep(#twikoo-container .tk-comment .tk-content) {
+  color: #1a1a2e !important;
+  line-height: 1.8 !important;
+}
+
+:deep(#twikoo-container .tk-comment .tk-time) {
+  color: #999 !important;
 }
 
 :deep(#twikoo-container .tk-submit) {
@@ -313,10 +321,6 @@ onUnmounted(() => {
   border: 1px solid #d5dbe3 !important;
   border-radius: 8px !important;
   padding: 10px 14px !important;
-}
-
-:deep(#twikoo-container .tk-submit .tk-input::placeholder) {
-  color: #aaa !important;
 }
 
 :deep(#twikoo-container .tk-submit .tk-input:focus) {
@@ -354,7 +358,7 @@ onUnmounted(() => {
 }
 
 :deep(#twikoo-container .tk-count) {
-  color: #666 !important;
+  color: #888 !important;
 }
 
 :deep(#twikoo-container .tk-more) {
@@ -369,6 +373,18 @@ onUnmounted(() => {
 
 :deep(#twikoo-container .tk-owner) {
   background: #e3f2fd !important;
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-actions) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-like) {
+  color: #1a1a2e !important;
+}
+
+:deep(#twikoo-container .tk-dislike) {
   color: #1a1a2e !important;
 }
 </style>
