@@ -75,7 +75,7 @@ const initTwikoo = () => {
 
   if (typeof twikoo === 'undefined') {
     const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.min.js'
+    script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.7.14/dist/twikoo.min.js'
     script.onload = () => initTwikoo()
     document.head.appendChild(script)
     return
