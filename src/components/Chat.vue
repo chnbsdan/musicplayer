@@ -1,5 +1,5 @@
 <template>
-  <div id="chat-modal" ref="modal" @click="onBackdropClick">
+  <div id="chat-modal" ref="modalRef" @click="onBackdropClick">
     <div class="chat-modal-content">
       <div class="chat-header">
         <span>💬 热聊区 · 音乐交流</span>
@@ -11,7 +11,7 @@
         </span>
       </div>
       <div class="chat-body">
-        <div id="twikoo-container" ref="container"></div>
+        <div id="twikoo-container" ref="containerRef"></div>
       </div>
     </div>
   </div>
@@ -20,8 +20,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const modal = ref(null)
-const container = ref(null)
+const modalRef = ref(null)
+const containerRef = ref(null)
 const isOpen = ref(false)
 let twikooInstance = null
 
@@ -37,7 +37,7 @@ const tags = [
 const open = () => {
   if (isOpen.value) return
   isOpen.value = true
-  modal.value.style.display = 'flex'
+  modalRef.value.style.display = 'flex'
   document.body.style.overflow = 'hidden'
   setTimeout(initTwikoo, 300)
 }
@@ -45,12 +45,16 @@ const open = () => {
 const close = () => {
   if (!isOpen.value) return
   isOpen.value = false
-  modal.value.style.display = 'none'
+  modalRef.value.style.display = 'none'
   document.body.style.overflow = ''
 }
 
+const toggle = () => {
+  isOpen.value ? close() : open()
+}
+
 const onBackdropClick = (e) => {
-  if (e.target === modal.value) close()
+  if (e.target === modalRef.value) close()
 }
 
 const fillTag = (text) => {
@@ -66,10 +70,10 @@ const fillTag = (text) => {
 }
 
 const initTwikoo = () => {
-  if (twikooInstance || typeof twikoo === 'undefined') return
+  if (twikooInstance || typeof twikoo === 'undefined' || !containerRef.value) return
   try {
     twikooInstance = twikoo.init({
-      el: container.value,
+      el: containerRef.value,
       envId: 'https://twikoo.hangdn.com',
       region: 'ap-guangzhou'
     })
@@ -83,8 +87,8 @@ const onKeydown = (e) => {
   if (e.key === 'Escape' && isOpen.value) close()
 }
 
-// 暴露给父组件
-defineExpose({ open, close, toggle: () => isOpen.value ? close() : open() })
+// 暴露
+defineExpose({ open, close, toggle })
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
@@ -123,6 +127,7 @@ onUnmounted(() => {
   position: relative;
 }
 
+/* 暗色主题适配 - 使用 :deep 穿透 */
 :deep(.app:not(.light)) #chat-modal .chat-modal-content {
   background: #1a1a2e;
   border-color: rgba(255, 255, 255, 0.08);
@@ -227,25 +232,6 @@ onUnmounted(() => {
 
 .chat-tag:hover {
   transform: scale(1.04);
-}
-
-.chat-tag:nth-child(1):hover {
-  background: #fde8d0;
-}
-.chat-tag:nth-child(2):hover {
-  background: #d4e8f5;
-}
-.chat-tag:nth-child(3):hover {
-  background: #d0f0dc;
-}
-.chat-tag:nth-child(4):hover {
-  background: #fcf3d0;
-}
-.chat-tag:nth-child(5):hover {
-  background: #fad0db;
-}
-.chat-tag:nth-child(6):hover {
-  background: #ddd0eb;
 }
 
 :deep(.app:not(.light)) .chat-tag {
