@@ -1,6 +1,6 @@
 <template>
   <div id="chat-modal" ref="modalRef" @click="onBackdropClick">
-    <div class="chat-modal-content">
+    <div class="chat-modal-content" @click.stop>
       <div class="chat-header">
         <span>💬 热聊区 · 音乐交流</span>
         <button @click="close">&times;</button>
@@ -10,20 +10,26 @@
           {{ tag.label }}
         </span>
       </div>
-      <div class="chat-body">
-        <div id="twikoo-container" ref="containerRef"></div>
+      <div class="chat-body" id="chat-body">
+        <div id="twikoo-container" ref="containerRef">
+          <div style="text-align:center;padding:40px 0;color:var(--text-secondary);">
+            <span style="font-size:24px;">💬</span>
+            <p style="margin-top:12px;">加载评论中...</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 const modalRef = ref(null)
 const containerRef = ref(null)
 const isOpen = ref(false)
 let twikooInstance = null
+let isTwikooLoaded = false
 
 const tags = [
   { label: '🎵 单曲循环', text: '推荐一首最近单曲循环的歌' },
@@ -34,14 +40,22 @@ const tags = [
   { label: '🌙 深夜歌单', text: '求推荐适合深夜听的歌' }
 ]
 
+// ===== 打开弹窗 =====
 const open = () => {
   if (isOpen.value) return
   isOpen.value = true
   modalRef.value.style.display = 'flex'
   document.body.style.overflow = 'hidden'
-  setTimeout(initTwikoo, 300)
+  
+  // 延迟初始化 Twikoo，确保 DOM 渲染完成
+  nextTick(() => {
+    setTimeout(() => {
+      initTwikoo()
+    }, 500)
+  })
 }
 
+// ===== 关闭弹窗 =====
 const close = () => {
   if (!isOpen.value) return
   isOpen.value = false
@@ -53,10 +67,12 @@ const toggle = () => {
   isOpen.value ? close() : open()
 }
 
+// ===== 点击背景关闭 =====
 const onBackdropClick = (e) => {
   if (e.target === modalRef.value) close()
 }
 
+// ===== 点击话题标签 =====
 const fillTag = (text) => {
   open()
   setTimeout(() => {
@@ -65,198 +81,77 @@ const fillTag = (text) => {
       input.value = '🎵 ' + text + ' \n\n'
       input.focus()
       input.dispatchEvent(new Event('input'))
+    } else {
+      // 如果输入框还没加载，再等一会儿
+      setTimeout(() => {
+        const input2 = document.querySelector('#twikoo-container .tk-input textarea')
+        if (input2) {
+          input2.value = '🎵 ' + text + ' \n\n'
+          input2.focus()
+          input2.dispatchEvent(new Event('input'))
+        }
+      }, 1000)
     }
-  }, 500)
+  }, 600)
 }
 
+// ===== 初始化 Twikoo =====
 const initTwikoo = () => {
-  if (twikooInstance || typeof twikoo === 'undefined' || !containerRef.value) return
+  if (isTwikooLoaded || typeof twikoo === 'undefined') {
+    if (typeof twikoo === 'undefined') {
+      console.warn('Twikoo 库未加载')
+      return
+    }
+    return
+  }
+  
+  if (!containerRef.value) {
+    console.warn('Twikoo 容器不存在')
+    return
+  }
+
   try {
+    isTwikooLoaded = true
     twikooInstance = twikoo.init({
       el: containerRef.value,
       envId: 'https://twikoo.hangdn.com',
       region: 'ap-guangzhou'
     })
+    console.log('✅ Twikoo 初始化成功')
   } catch (e) {
     console.warn('Twikoo 初始化失败:', e)
+    isTwikooLoaded = false
+    // 显示错误信息
+    if (containerRef.value) {
+      containerRef.value.innerHTML = `
+        <div style="text-align:center;padding:40px 20px;color:var(--text-secondary);">
+          <span style="font-size:32px;">😅</span>
+          <p style="margin-top:12px;">评论加载失败，请刷新重试</p>
+          <button onclick="location.reload()" style="margin-top:12px;padding:8px 24px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);cursor:pointer;">刷新</button>
+        </div>
+      `
+    }
   }
 }
 
-// 键盘关闭
+// ===== 键盘关闭 =====
 const onKeydown = (e) => {
   if (e.key === 'Escape' && isOpen.value) close()
 }
 
-// 暴露
+// ===== 暴露方法 =====
 defineExpose({ open, close, toggle })
 
+// ===== 生命周期 =====
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  // 预加载 Twikoo 库
+  if (typeof twikoo !== 'undefined') {
+    isTwikooLoaded = true
+  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
 })
 </script>
-
-<style scoped>
-#chat-modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 999999;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.25s ease;
-}
-
-#chat-modal .chat-modal-content {
-  background: #ffffff;
-  border-radius: var(--radius);
-  width: 92%;
-  max-width: 640px;
-  max-height: 85vh;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  position: relative;
-}
-
-/* 暗色主题适配 - 使用 :deep 穿透 */
-:deep(.app:not(.light)) #chat-modal .chat-modal-content {
-  background: #1a1a2e;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 22px;
-  border-bottom: 1px solid #e8ecf1;
-  background: #f8f9fa;
-}
-
-:deep(.app:not(.light)) .chat-header {
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
-.chat-header span {
-  font-weight: 700;
-  color: #1a1a2e;
-  font-size: 16px;
-}
-
-:deep(.app:not(.light)) .chat-header span {
-  color: #e8eaf6;
-}
-
-.chat-header button {
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  font-size: 24px;
-  transition: all 0.3s;
-  padding: 0 6px;
-  line-height: 1;
-}
-
-.chat-header button:hover {
-  color: #ff4500;
-}
-
-:deep(.app:not(.light)) .chat-header button {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.chat-tags {
-  padding: 12px 22px 8px 22px;
-  border-bottom: 1px solid #eef1f5;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  background: #fafbfc;
-}
-
-:deep(.app:not(.light)) .chat-tags {
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom-color: rgba(255, 255, 255, 0.04);
-}
-
-.chat-tag {
-  display: inline-block;
-  padding: 3px 14px;
-  border-radius: 14px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.chat-tag:nth-child(1) {
-  background: #fff5e6;
-  color: #e67e22;
-  border: 1px solid #fde8d0;
-}
-.chat-tag:nth-child(2) {
-  background: #e8f4fd;
-  color: #2980b9;
-  border: 1px solid #d4e8f5;
-}
-.chat-tag:nth-child(3) {
-  background: #e8f8ed;
-  color: #27ae60;
-  border: 1px solid #d0f0dc;
-}
-.chat-tag:nth-child(4) {
-  background: #fef9e7;
-  color: #d4a017;
-  border: 1px solid #fcf3d0;
-}
-.chat-tag:nth-child(5) {
-  background: #fde8ef;
-  color: #c0392b;
-  border: 1px solid #fad0db;
-}
-.chat-tag:nth-child(6) {
-  background: #ede7f6;
-  color: #7b1fa2;
-  border: 1px solid #ddd0eb;
-}
-
-.chat-tag:hover {
-  transform: scale(1.04);
-}
-
-:deep(.app:not(.light)) .chat-tag {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e8eaf6;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-:deep(.app:not(.light)) .chat-tag:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.chat-body {
-  padding: 16px 22px 22px 22px;
-  max-height: calc(85vh - 150px);
-  overflow-y: auto;
-  background: #ffffff;
-}
-
-:deep(.app:not(.light)) .chat-body {
-  background: transparent;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-</style>
