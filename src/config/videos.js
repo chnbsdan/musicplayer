@@ -10,7 +10,9 @@ export const VIDEO_ITEMS = [
 
 // YouTube 视频
 export const YOUTUBE_ITEMS = [
-  { id: 1, title: '示例视频 1', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', group: '默认' },
+  { id: 1, title: 'Rick Astley - Never Gonna Give You Up', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', group: '默认' },
+  { id: 1, title: '大进军-南线大追歼', url: 'https://www.youtube.com/watch?v=rKovMN1Hq-4&t=277s', group: '默认' },
+  
   // 添加更多...
 ]
 
