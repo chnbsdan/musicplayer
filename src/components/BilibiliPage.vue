@@ -54,8 +54,19 @@ const currentVideo = ref(null)
 // 🔥 在这里添加你的 Bilibili 视频链接
 // ============================================================
 const videoItems = [
-  { id: 1, title: '示例视频 1', url: 'https://www.bilibili.com/video/BV1GJ411x7fT' },
-  { id: 2, title: '天赐的声音1', url: 'https://www.bilibili.com/bangumi/play/ep4280680?share_source=copy_web' },
+  { id: 1, title: '2022男生女生向前冲', url: 'https://www.bilibili.com/bangumi/play/ss43287' },
+  { id: 2, title: '天赐的声音1', url: 'https://www.bilibili.com/bangumi/play/ep4280680' },
+  { id: 3, title: '月风北大1', url: 'https://www.bilibili.com/video/BV1P3Lc6UE5h' },
+  { id: 4, title: '月风北大2', url: 'https://www.bilibili.com/video/BV16JGx6BEEj' },
+  { id: 5, title: '月风北大3', url: 'https://www.bilibili.com/video/BV1r5EM66EDH' },
+  { id: 6, title: '月风北大4', url: 'https://www.bilibili.com/video/BV1z7L96sEyt' },
+  { id: 7, title: '月风北大5', url: 'https://www.bilibili.com/video/BV12J7h6kEJf' },
+  { id: 8, title: '月风北大6', url: 'https://www.bilibili.com/video/BV1aWKZ6eEQC' },
+  { id: 9, title: '月风北大7', url: 'https://www.bilibili.com/video/BV1kFTX6BEzq' },
+  { id: 10, title: '月风北大8', url: 'https://www.bilibili.com/video/BV1hdNe6hEtA' },
+
+
+  https://www.bilibili.com/video/BV1P3Lc6UE5h
   // 添加更多...
 ]
 
