@@ -1,9 +1,14 @@
 <template>
-  <div class="app" :class="{ light: store.isLight }">
+  <div class="app" :class="{ light: store.isLight }" :style="bgStyle">
 
     <!-- 左上角导航菜单 -->
     <NavMenu />
     
+    <!-- 换背景按钮 -->
+    <button class="bg-switch-btn" @click="changeBg" title="换一张背景">
+      <i class="fas fa-images"></i>
+    </button>
+
     <!-- 音乐胶囊 -->
     <Capsule ref="capsuleRef" />
 
@@ -42,18 +47,18 @@
 
     <!-- 页脚 -->
     <footer class="footer">
-  <span>© 2024 Music Player · 由 <a href="https://github.com/chnbsdan/musicplayer" target="_blank" style="color:var(--text-primary);text-decoration:none;font-weight:600;border-bottom:1px solid var(--border-color);transition:all 0.3s;" onmouseover="this.style.color='#ff8c00';this.style.borderBottomColor='#ff8c00';" onmouseout="this.style.color='var(--text-primary)';this.style.borderBottomColor='var(--border-color)';">GitHub</a> 驱动</span>
-  <button @click="openChat">💬 热聊区</button>
-</footer>
+      <span>© 2024 Music Player · 由 <a href="https://github.com/chnbsdan/musicplayer" target="_blank" style="color:var(--text-primary);text-decoration:none;font-weight:600;border-bottom:1px solid var(--border-color);transition:all 0.3s;" onmouseover="this.style.color='#ff8c00';this.style.borderBottomColor='#ff8c00';" onmouseout="this.style.color='var(--text-primary)';this.style.borderBottomColor='var(--border-color)';">GitHub</a> 驱动</span>
+      <button @click="openChat"><i class="fas fa-comment-dots"></i> 热聊区</button>
+    </footer>
+
     <!-- 热聊区弹窗 -->
     <Chat ref="chatRef" />
   </div>
 </template>
 
-
 <script setup>
 import NavMenu from './components/NavMenu.vue'  
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { usePlayerStore } from './stores/playerStore'
 import Capsule from './components/Capsule.vue'
 import Player from './components/Player.vue'
@@ -69,12 +74,63 @@ const playerRef = ref(null)
 const lyricsRef = ref(null)
 const chatRef = ref(null)
 
+// ===== 背景图 =====
+const bgImage = ref('')
+const bgLoading = ref(false)
+const BG_API = 'https://pico.1356666.xyz/api/wallpaper?folder=sh'
+
+const bgStyle = computed(() => {
+  if (bgImage.value) {
+    return {
+      backgroundImage: `url(${bgImage.value})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed'
+    }
+  }
+  return {}
+})
+
+const changeBg = async () => {
+  if (bgLoading.value) return
+  bgLoading.value = true
+  try {
+    const url = `${BG_API}&t=${Date.now()}`
+    const img = new Image()
+    img.onload = () => {
+      bgImage.value = url
+      bgLoading.value = false
+      localStorage.setItem('bgImage', url)
+    }
+    img.onerror = () => {
+      bgLoading.value = false
+      console.warn('背景图加载失败')
+    }
+    img.src = url
+  } catch (e) {
+    bgLoading.value = false
+    console.warn('换背景失败:', e)
+  }
+}
+
+const loadBg = () => {
+  const saved = localStorage.getItem('bgImage')
+  if (saved) {
+    bgImage.value = saved
+  } else {
+    changeBg()
+  }
+}
+
+// ===== 打开热聊区 =====
 const openChat = () => {
   if (chatRef.value) {
     chatRef.value.open()
   }
 }
 
+// ===== 右键菜单事件 =====
 const handlePlayToggle = () => {
   playerRef.value?.toggle()
 }
@@ -151,6 +207,7 @@ const onPlaylistSwitch = (e) => {
 
 onMounted(() => {
   store.loadTheme()
+  loadBg()
   window.addEventListener('capsule-toggle', onCapsuleToggle)
   window.addEventListener('playlist-switch', onPlaylistSwitch)
 })
@@ -182,6 +239,35 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.app {
+  min-height: 100vh;
+  transition: background-image 0.5s ease;
+  position: relative;
+}
+
+/* 背景图遮罩 - 让内容更清晰 */
+.app::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app.light::before {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* 所有内容在遮罩上面 */
+.app > * {
+  position: relative;
+  z-index: 1;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -195,6 +281,47 @@ body {
 }
 .app.light ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 换背景按钮 ===== */
+.bg-switch-btn {
+  position: fixed;
+  top: 76px;
+  left: 20px;
+  z-index: 50000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.15));
+  background: var(--btn-bg, rgba(255,255,255,0.10));
+  backdrop-filter: blur(12px);
+  color: var(--text-primary, #fff);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.bg-switch-btn:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.08) rotate(15deg);
+}
+
+.bg-switch-btn:active {
+  transform: scale(0.95);
+}
+
+body.light .bg-switch-btn {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.08);
+  color: #1a1a2e;
+}
+
+body.light .bg-switch-btn:hover {
+  background: rgba(0,0,0,0.12);
 }
 
 /* ===== CSS 变量 ===== */
@@ -450,6 +577,9 @@ body {
   transition: all var(--transition);
   padding: 5px 16px;
   border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .app.light .footer button {
