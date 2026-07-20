@@ -2,7 +2,7 @@
 
 一个基于 Vue 3 + Vite + APlayer 的现代音乐播放器，支持多歌单、歌词同步、主题切换、热聊区评论等功能。
 
-![截图占位](https://via.placeholder.com/800x400/0f0f1a/ff8c00?text=Music+Player)
+![截图占位](/演示1.jpg)
 
 ---
 
