@@ -13,14 +13,22 @@
       <div class="nav-item" @click="openPage('music')">
         <span class="nav-icon">♪</span> 在线音乐
       </div>
+      <div class="nav-item" @click="openPage('youtube')">
+        <span class="nav-icon"><i class="fab fa-youtube"></i></span> YouTube
+      </div>
+      <div class="nav-item" @click="openPage('bilibili')">
+        <span class="nav-icon"><i class="fab fa-bilibili"></i></span> Bilibili
+      </div>
       <div class="nav-item" @click="openPage('links')">
         <span class="nav-icon">🔗</span> 影音友链
       </div>
     </div>
 
-    <!-- 三个独立页面 -->
+    <!-- 页面组件 -->
     <VideoPage :visible="pageVisible && pageType === 'video'" @close="pageVisible = false" />
     <MusicPage :visible="pageVisible && pageType === 'music'" @close="pageVisible = false" />
+    <YouTubePage :visible="pageVisible && pageType === 'youtube'" @close="pageVisible = false" />
+    <BilibiliPage :visible="pageVisible && pageType === 'bilibili'" @close="pageVisible = false" />
     <LinksPage :visible="pageVisible && pageType === 'links'" @close="pageVisible = false" />
   </div>
 </template>
@@ -29,6 +37,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import VideoPage from './VideoPage.vue'
 import MusicPage from './MusicPage.vue'
+import YouTubePage from './YouTubePage.vue'
+import BilibiliPage from './BilibiliPage.vue'
 import LinksPage from './LinksPage.vue'
 
 const isOpen = ref(false)
@@ -45,7 +55,6 @@ const openPage = (type) => {
   pageVisible.value = true
 }
 
-// 点击其他地方关闭菜单
 const handleClickOutside = (e) => {
   const wrapper = document.querySelector('.nav-menu-wrapper')
   if (wrapper && !wrapper.contains(e.target)) {
@@ -63,6 +72,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 样式保持不变 */
 .nav-menu-wrapper {
   position: fixed;
   top: 20px;
@@ -145,8 +155,15 @@ onUnmounted(() => {
 
 .nav-item .nav-icon {
   font-size: 14px;
-  width: 20px;
+  width: 24px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item .nav-icon i {
+  font-size: 16px;
 }
 
 /* 浅色模式 */
