@@ -1,5 +1,9 @@
 <template>
   <div class="app" :class="{ light: store.isLight }">
+
+    <!-- 左上角导航菜单 -->
+    <NavMenu />
+    
     <!-- 音乐胶囊 -->
     <Capsule ref="capsuleRef" />
 
@@ -46,7 +50,9 @@
   </div>
 </template>
 
+
 <script setup>
+import NavMenu from './components/NavMenu.vue'  
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePlayerStore } from './stores/playerStore'
 import Capsule from './components/Capsule.vue'
