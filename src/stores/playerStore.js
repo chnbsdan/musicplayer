@@ -41,13 +41,13 @@ export const usePlayerStore = defineStore('player', () => {
   })
 
   const loopModeLabel = computed(() => {
-    const labels = {
-      'all': '🔁 循环全部',
-      'one': '🔂 单曲循环',
-      'none': '▶ 顺序播放'
-    }
-    return labels[loopMode.value] || '🔁 循环全部'
-  })
+  const labels = {
+    'all': '循环全部',
+    'one': '单曲循环',
+    'none': '顺序播放'
+  }
+  return labels[loopMode.value] || '循环全部'
+})
 
   // ===== 方法 =====
   function togglePlay() {
