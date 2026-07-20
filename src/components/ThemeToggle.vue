@@ -1,6 +1,6 @@
 <template>
-  <button class="round-btn" @click="toggleTheme" title="切换主题">
-    <span>{{ store.isLight ? '🌙' : '☀️' }}</span>
+  <button class="round-btn" @click="toggleTheme" :title="store.isLight ? '切换到暗色' : '切换到亮色'">
+    <i :class="store.isLight ? 'fas fa-moon' : 'fas fa-sun'"></i>
   </button>
 </template>
 
