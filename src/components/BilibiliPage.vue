@@ -54,7 +54,7 @@ const currentVideo = ref(null)
 // 🔥 在这里添加你的 Bilibili 视频链接
 // ============================================================
 const videoItems = [
-  { id: 1, title: '2022男生女生向前冲', url: 'https://www.bilibili.com/bangumi/play/ss43287' },
+  { id: 1, title: '一人一首成名曲', url: 'https://www.bilibili.com/video/BV1pGygYDEfw' },
   { id: 2, title: '天赐的声音1', url: 'https://www.bilibili.com/bangumi/play/ep4280680' },
   { id: 3, title: '月风北大1', url: 'https://www.bilibili.com/video/BV1P3Lc6UE5h' },
   { id: 4, title: '月风北大2', url: 'https://www.bilibili.com/video/BV16JGx6BEEj' },
