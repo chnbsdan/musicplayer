@@ -1,3 +1,4 @@
+
 <div align="center">
   <img src="演示1.jpg" alt="Music Player" width="800" style="border-radius: 16px;">
   
@@ -58,8 +59,8 @@
 ### 🎶 音乐搜索与下载
 | 功能 | 说明 |
 |------|------|
-| 音乐搜索 | 基于 GD Studio API 搜索歌曲 |
-| 音乐下载 | 支持搜索/试听/下载（320k/128k） |
+| 音乐搜索 | 基于 Meting API 搜索歌曲 |
+| 音乐下载 | 基于 GD Studio API 搜索/试听/下载（320k/128k） |
 | 多音源 | 支持网易云、QQ音乐、酷狗等 |
 
 ### 💬 社交功能
@@ -162,27 +163,60 @@ export const BILIBILI_ITEMS = [
 
 ## 📡 API 接口
 
-### GD Studio 音乐 API
+### 一、音乐搜索 API（Meting 接口）
 
-项目使用 [GD Studio API](https://music.gdstudio.xyz) 作为音乐搜索和下载的后端。
+项目使用 `https://api.i-meto.com/meting/demo` 作为音乐搜索的前端展示接口。
+
+**基础地址：**
+```
+https://api.i-meto.com/meting/demo
+```
+
+#### 搜索歌曲（页面展示）
+
+```
+GET /demo?id={关键词}
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | string | ✅ | 搜索关键词（歌手名/歌曲名） |
+
+**请求示例：**
+```
+https://api.i-meto.com/meting/demo?id=王杰
+```
+
+**返回：** 一个包含歌曲列表的 HTML 播放器页面，可直接在 iframe 中展示。
+
+---
+
+### 二、音乐下载 API（GD Studio 接口）
+
+项目使用 [GD Studio API](https://music.gdstudio.xyz) 作为音乐下载的后端。
 
 **基础地址：**
 ```
 https://music-api.gdstudio.xyz/api.php
 ```
 
-#### 搜索歌曲
+#### 1. 搜索歌曲
 
 ```
 GET /api.php?types=search&source=netease&name={关键词}&count={数量}
 ```
 
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `types` | 固定为 `search` | - |
-| `source` | 音乐源：netease/tencent/kuwo | netease |
-| `name` | 搜索关键词 | - |
-| `count` | 返回数量 | 20 |
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `types` | string | ✅ | 固定为 `search` |
+| `source` | string | ❌ | 音乐源：netease/tencent/kuwo，默认 netease |
+| `name` | string | ✅ | 搜索关键词 |
+| `count` | string | ❌ | 返回数量，默认 20 |
+
+**请求示例：**
+```
+https://music-api.gdstudio.xyz/api.php?types=search&source=netease&name=周杰伦&count=10
+```
 
 **返回示例：**
 ```json
@@ -198,18 +232,23 @@ GET /api.php?types=search&source=netease&name={关键词}&count={数量}
 ]
 ```
 
-#### 获取播放链接
+#### 2. 获取播放链接（试听/下载）
 
 ```
-GET /api.php?types=url&source=netease&id={歌曲ID}&br={音质}
+GET /api.php?types=url&source={音源}&id={歌曲ID}&br={音质}
 ```
 
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `types` | 固定为 `url` | - |
-| `source` | 音乐源 | netease |
-| `id` | 歌曲 ID | - |
-| `br` | 音质：128/192/320/740/999 | 999 |
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `types` | string | ✅ | 固定为 `url` |
+| `source` | string | ❌ | 音乐源，默认 netease |
+| `id` | string | ✅ | 歌曲 ID |
+| `br` | string | ❌ | 音质：128/192/320/740/999，默认 999 |
+
+**请求示例：**
+```
+https://music-api.gdstudio.xyz/api.php?types=url&source=netease&id=5257138&br=128
+```
 
 **返回示例：**
 ```json
@@ -220,51 +259,93 @@ GET /api.php?types=url&source=netease&id={歌曲ID}&br={音质}
 }
 ```
 
-#### 获取封面
+#### 3. 获取专辑封面
 
 ```
-GET /api.php?types=pic&source=netease&id={图片ID}&size={尺寸}
+GET /api.php?types=pic&source={音源}&id={图片ID}&size={尺寸}
 ```
 
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `types` | 固定为 `pic` | - |
-| `source` | 音乐源 | netease |
-| `id` | 图片 ID（来自搜索结果的 pic_id） | - |
-| `size` | 图片尺寸：300/500 | 300 |
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `types` | string | ✅ | 固定为 `pic` |
+| `source` | string | ❌ | 音乐源，默认 netease |
+| `id` | string | ✅ | 图片 ID（从搜索结果的 `pic_id` 获取） |
+| `size` | string | ❌ | 图片尺寸：300/500，默认 300 |
 
-#### 获取歌词
+**请求示例：**
+```
+https://music-api.gdstudio.xyz/api.php?types=pic&source=netease&id=109951165671182684&size=500
+```
+
+#### 4. 获取歌词
 
 ```
-GET /api.php?types=lyric&source=netease&id={歌词ID}
+GET /api.php?types=lyric&source={音源}&id={歌词ID}
 ```
 
-| 参数 | 说明 |
-|------|------|
-| `types` | 固定为 `lyric` |
-| `source` | 音乐源 |
-| `id` | 歌词 ID（通常与歌曲 ID 相同） |
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `types` | string | ✅ | 固定为 `lyric` |
+| `source` | string | ❌ | 音乐源，默认 netease |
+| `id` | string | ✅ | 歌词 ID（通常与歌曲 ID 相同） |
 
-**返回示例：**
-```json
-{
-  "lyric": "[00:00.000] 歌词内容...",
-  "tlyric": "[00:00.000] 翻译歌词..."
-}
+**请求示例：**
 ```
+https://music-api.gdstudio.xyz/api.php?types=lyric&source=netease&id=5257138
+```
+
+---
 
 ### 支持的音源
 
-| 音源 | source 参数 |
-|------|------------|
-| 网易云音乐 | `netease` |
-| QQ音乐 | `tencent` |
-| 酷狗音乐 | `kuwo` |
-| 酷我音乐 | `kuwo` |
-| Tidal | `tidal` |
-| Qobuz | `qobuz` |
-| YouTube Music | `ytmusic` |
-| Spotify | `spotify` |
+| 音源 | `source` 参数 | 状态 |
+|------|--------------|------|
+| 网易云音乐 | `netease` | ✅ 稳定 |
+| QQ音乐 | `tencent` | ✅ 稳定 |
+| 酷狗音乐 | `kugou` | ✅ 稳定 |
+| 酷我音乐 | `kuwo` | ✅ 稳定 |
+| Tidal | `tidal` | ⚠️ 部分可用 |
+| YouTube Music | `ytmusic` | ⚠️ 部分可用 |
+
+---
+
+### 前端使用示例
+
+```javascript
+// ===== Meting 搜索（页面展示） =====
+const searchMeting = (keyword) => {
+  const iframe = document.getElementById('musicFrame');
+  iframe.src = `https://api.i-meto.com/meting/demo?id=${encodeURIComponent(keyword)}`;
+};
+
+// ===== GD Studio 搜索（获取数据） =====
+const searchMusic = async (keyword) => {
+  const res = await fetch(
+    `https://music-api.gdstudio.xyz/api.php?types=search&source=netease&name=${encodeURIComponent(keyword)}`
+  );
+  return await res.json();
+};
+
+// ===== GD Studio 获取播放链接 =====
+const getSongUrl = async (songId, br = 128) => {
+  const res = await fetch(
+    `https://music-api.gdstudio.xyz/api.php?types=url&source=netease&id=${songId}&br=${br}`
+  );
+  const data = await res.json();
+  return data.url;
+};
+
+// ===== 下载歌曲 =====
+const downloadSong = async (songId, title, artist) => {
+  const url = await getSongUrl(songId);
+  if (url) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title}-${artist}.mp3`;
+    a.click();
+  }
+};
+```
 
 ---
 
@@ -333,6 +414,7 @@ music-player/
 | APlayer | 音乐播放引擎 |
 | Font Awesome 6 | 图标库 |
 | Twikoo | 评论系统 |
+| Meting API | 音乐搜索展示 |
 | GD Studio API | 音乐搜索与下载 |
 
 ---
@@ -340,9 +422,8 @@ music-player/
 ## 📝 更新日志
 
 ### v1.2.0 (2026-07)
-- ✅ 新增音乐搜索功能
-- ✅ 新增音乐下载功能（支持 320k/128k）
-- ✅ 集成 GD Studio API
+- ✅ 新增音乐搜索功能（Meting API）
+- ✅ 新增音乐下载功能（GD Studio API，支持 320k/128k）
 - ✅ 统一 Font Awesome 6 图标
 - ✅ 导航菜单图标颜色区分
 - ✅ 音乐下载页面播放/暂停状态切换
@@ -382,4 +463,3 @@ MIT License
 <div align="center">
   <sub>Built with ❤️ by <a href="https://github.com/chnbsdan">chnbsdan</a></sub>
 </div>
-
