@@ -13,6 +13,9 @@
       <div class="nav-item" @click="openPage('music')">
         <span class="nav-icon">♪</span> 在线音乐
       </div>
+      <div class="nav-item" @click="openPage('search')">
+        <span class="nav-icon"><i class="fas fa-search"></i></span> 音乐搜索
+      </div>
       <div class="nav-item" @click="openPage('youtube')">
         <span class="nav-icon"><i class="fab fa-youtube"></i></span> YouTube
       </div>
@@ -27,6 +30,7 @@
     <!-- 页面组件 -->
     <VideoPage :visible="pageVisible && pageType === 'video'" @close="pageVisible = false" />
     <MusicPage :visible="pageVisible && pageType === 'music'" @close="pageVisible = false" />
+    <MusicSearchPage :visible="pageVisible && pageType === 'search'" @close="pageVisible = false" />
     <YouTubePage :visible="pageVisible && pageType === 'youtube'" @close="pageVisible = false" />
     <BilibiliPage :visible="pageVisible && pageType === 'bilibili'" @close="pageVisible = false" />
     <LinksPage :visible="pageVisible && pageType === 'links'" @close="pageVisible = false" />
@@ -37,6 +41,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import VideoPage from './VideoPage.vue'
 import MusicPage from './MusicPage.vue'
+import MusicSearchPage from './MusicSearchPage.vue'
 import YouTubePage from './YouTubePage.vue'
 import BilibiliPage from './BilibiliPage.vue'
 import LinksPage from './LinksPage.vue'
@@ -72,7 +77,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 样式保持不变 */
+/* 样式和之前一样，保持不变 */
 .nav-menu-wrapper {
   position: fixed;
   top: 20px;
