@@ -1,6 +1,6 @@
 <template>
   <div v-if="visible" class="page-overlay" @click="close">
-    <div class="page-content" @click.stop">
+    <div class="page-content" @click.stop>
       <!-- 头部 -->
       <div class="page-header">
         <span class="page-title"><i class="fas fa-download" style="color:#4facfe;"></i> 音乐下载</span>
@@ -9,7 +9,7 @@
 
       <div class="page-body">
         <!-- 搜索框 -->
-        <div class="search-box">
+        <div class="search-box" @click.stop>
           <input
             type="text"
             id="searchInput"
@@ -17,7 +17,7 @@
             v-model="keyword"
             @keydown.enter="searchMusic"
           />
-          <button @click="searchMusic">
+          <button @click.stop="searchMusic">
             <i class="fas fa-search"></i> 搜索
           </button>
         </div>
@@ -29,41 +29,41 @@
         </div>
 
         <!-- 搜索结果列表 -->
-        <div class="result-list" v-if="searchResults.length > 0">
+        <div class="result-list" v-if="searchResults.length > 0" @click.stop>
           <div
             v-for="(item, index) in searchResults"
             :key="index"
             class="result-item"
             :class="{ 'is-playing': item.isPlaying }"
+            @click.stop
           >
-            <div class="result-info">
+            <div class="result-info" @click.stop>
               <span class="result-title">{{ item.title }}</span>
               <span class="result-artist"><i class="fas fa-user" style="font-size:10px;color:#aaa;"></i> {{ item.artist }}</span>
             </div>
-            <div class="result-actions">
-              <button class="btn-play" @click="togglePlay(item)" :title="item.isPlaying ? '暂停' : '试听'">
+            <div class="result-actions" @click.stop>
+              <button class="btn-play" @click.stop="togglePlay(item)" :title="item.isPlaying ? '暂停' : '试听'">
                 <i v-if="item.isPlaying" class="fas fa-pause"></i>
                 <i v-else class="fas fa-play"></i>
               </button>
-              <button class="btn-download" @click="downloadSong(item)" title="下载">
+              <button class="btn-download" @click.stop="downloadSong(item)" title="下载">
                 <i class="fas fa-download"></i>
               </button>
             </div>
           </div>
         </div>
-        <div v-else-if="searched" class="empty-state">
+        <div v-else-if="searched" class="empty-state" @click.stop>
           <i class="fas fa-music" style="font-size:48px;color:#ddd;"></i>
-          <p>没有找到相关歌曲，换个关键词试试</p>
+          <p>没有找到相关歌曲</p>
         </div>
-        <div v-else class="empty-state">
+        <div v-else class="empty-state" @click.stop>
           <i class="fas fa-search" style="font-size:48px;color:#ddd;"></i>
           <p>输入歌手或歌曲名搜索音乐</p>
         </div>
 
-        <!-- 底部信息 -->
-        <div class="footer-tip">
+        <div class="footer-tip" @click.stop>
           <i class="fas fa-circle" style="color:#48bb78; font-size:0.4rem;"></i>
-          数据来自 GD Studio API · 支持搜索/试听/下载
+          数据来自 GD Studio API
         </div>
       </div>
     </div>
@@ -76,14 +76,8 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 const props = defineProps({ visible: Boolean })
 const emit = defineEmits(['close'])
 
-// ============================================================
-// 🔥 配置
-// ============================================================
 const GD_API = 'https://music-api.gdstudio.xyz/api.php'
 
-// ============================================================
-// 状态
-// ============================================================
 const keyword = ref('周杰伦')
 const searchResults = ref([])
 const searched = ref(false)
@@ -91,9 +85,6 @@ const isDownloading = ref(false)
 let audioPlayer = null
 let currentPlayingId = ref(null)
 
-// ============================================================
-// 搜索 - GD Studio 返回的是数组
-// ============================================================
 const searchMusic = async () => {
   const trimmed = keyword.value.trim()
   if (!trimmed) return
@@ -111,23 +102,15 @@ const searchMusic = async () => {
         id: song.id || '',
         title: song.name || '未知歌曲',
         artist: Array.isArray(song.artist) ? song.artist.join(' / ') : (song.artist || '未知'),
-        album: song.album || '',
-        pic_id: song.pic_id || '',
         source: song.source || 'netease',
         isPlaying: false
       }))
-    } else {
-      searchResults.value = []
     }
   } catch (e) {
     console.error('搜索失败:', e)
-    searchResults.value = []
   }
 }
 
-// ============================================================
-// 播放/暂停切换
-// ============================================================
 const togglePlay = async (item) => {
   if (currentPlayingId.value === item.id) {
     if (audioPlayer) {
@@ -149,11 +132,9 @@ const togglePlay = async (item) => {
     const url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=128`
     const res = await fetch(url)
     const data = await res.json()
+    const songUrl = data.url
 
-    // 🔥 修复：GD Studio 返回的是 { url, br, size }，没有嵌套 data
-    const songUrl = data?.url
-
-    if (songUrl && typeof songUrl === 'string' && songUrl.startsWith('http')) {
+    if (songUrl) {
       audioPlayer = new Audio(songUrl)
       audioPlayer.play()
       currentPlayingId.value = item.id
@@ -168,40 +149,34 @@ const togglePlay = async (item) => {
         currentPlayingId.value = null
         item.isPlaying = false
         audioPlayer = null
-        alert('播放失败，歌曲可能已失效')
       }
     } else {
-      alert('该歌曲暂无播放链接，可能是付费歌曲')
+      alert('该歌曲暂无播放链接')
     }
   } catch (e) {
     console.error('播放失败:', e)
-    alert('播放失败，请稍后重试')
+    alert('播放失败')
   }
 }
 
-// ============================================================
-// 下载
-// ============================================================
 const downloadSong = async (item) => {
   if (isDownloading.value) return
   isDownloading.value = true
 
   try {
-    // 先试 320k
     let url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=320`
     let res = await fetch(url)
     let data = await res.json()
-    let songUrl = data?.url
+    let songUrl = data.url
 
-    // 如果 320 不行，降级到 128
-    if (!songUrl || typeof songUrl !== 'string' || !songUrl.startsWith('http')) {
+    if (!songUrl) {
       url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=128`
       res = await fetch(url)
       data = await res.json()
-      songUrl = data?.url
+      songUrl = data.url
     }
 
-    if (songUrl && typeof songUrl === 'string' && songUrl.startsWith('http')) {
+    if (songUrl) {
       const a = document.createElement('a')
       a.href = songUrl
       a.download = `${item.title}-${item.artist}.mp3`
@@ -209,19 +184,16 @@ const downloadSong = async (item) => {
       a.click()
       document.body.removeChild(a)
     } else {
-      alert('获取下载链接失败，可能是付费歌曲')
+      alert('获取下载链接失败')
     }
   } catch (e) {
     console.error('下载失败:', e)
-    alert('下载失败，请稍后重试')
+    alert('下载失败')
   } finally {
     isDownloading.value = false
   }
 }
 
-// ============================================================
-// 快捷键
-// ============================================================
 const handleKeydown = (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
     e.preventDefault()
@@ -242,9 +214,6 @@ const close = () => {
   emit('close')
 }
 
-// ============================================================
-// 生命周期
-// ============================================================
 watch(() => props.visible, (val) => {
   if (val) {
     setTimeout(() => document.getElementById('searchInput')?.focus(), 300)
@@ -255,9 +224,7 @@ watch(() => props.visible, (val) => {
 }, { immediate: true })
 
 onMounted(() => {
-  if (keyword.value) {
-    searchMusic()
-  }
+  if (keyword.value) searchMusic()
 })
 
 onUnmounted(() => {
@@ -270,6 +237,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 样式和之前完全一样 */
 .page-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -313,7 +281,8 @@ onUnmounted(() => {
   gap: 8px;
 }
 .page-close {
-  background: none; border: none;
+  background: none;
+  border: none;
   color: #999;
   font-size: 20px;
   cursor: pointer;
