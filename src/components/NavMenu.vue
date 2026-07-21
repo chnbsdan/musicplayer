@@ -15,7 +15,7 @@
         <span class="nav-icon"><i class="fas fa-search"></i></span> 音乐搜索
       </div>
       <div class="nav-item" @click="openPage('download')">
-        <span class="nav-icon"><i class="fas fa-download" style="color:#4facfe;"></i></span> 音乐下载
+        <span class="nav-icon"><i class="fas fa-download"></i></span> 音乐下载
       </div>
       <div class="nav-item" @click="openPage('youtube')">
         <span class="nav-icon"><i class="fab fa-youtube"></i></span> YouTube
