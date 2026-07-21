@@ -14,37 +14,37 @@
             allowfullscreen
             loading="lazy"
           ></iframe>
-          <div class="now-playing">{{ currentVideo.title }}</div>
+          <div class="now-playing">
+            <span class="playing-icon">▶</span>
+            {{ currentVideo.title }}
+          </div>
         </div>
         <div v-else class="placeholder">
           <span>▶️</span>
           <p>请选择视频</p>
         </div>
 
-        <!-- 视频列表 -->
-        <div class="item-list">
+        <!-- ===== 视频卡片网格 ===== -->
+        <div class="video-grid">
           <div
             v-for="item in videoItems"
             :key="item.id"
-            class="item"
+            class="video-card"
             :class="{ active: currentVideo && currentVideo.id === item.id }"
+            @click="playVideo(item)"
           >
-            <span class="item-icon"><i class="fab fa-youtube"></i></span>
-            <span class="item-title" @click="playVideo(item)">{{ item.title }}</span>
-            <button 
-              class="item-download" 
-              @click="downloadVideo(item.url)" 
-              :disabled="isDownloading"
-              :title="isDownloading ? '获取下载链接中...' : '下载视频'"
-            >
-              <i v-if="!isDownloading" class="fas fa-download"></i>
-              <span v-else class="loading-spinner-small"></span>
-            </button>
-            <span class="item-play" @click="playVideo(item)">▶</span>
+            <div class="video-card-left">
+              <span class="video-card-number">{{ String(item.id).padStart(2, '0') }}</span>
+              <span class="video-card-title">{{ item.title }}</span>
+            </div>
+            <div class="video-card-right">
+              <span class="video-card-badge">YouTube</span>
+              <span class="video-card-play">▶</span>
+            </div>
           </div>
         </div>
 
-        <div class="footer-tip">💡 点击下载按钮，一键获取下载链接</div>
+        <div class="footer-tip">💡 点击视频卡片即可播放</div>
       </div>
     </div>
   </div>
@@ -57,26 +57,15 @@ const props = defineProps({ visible: Boolean })
 const emit = defineEmits(['close'])
 
 const currentVideo = ref(null)
-const isDownloading = ref(false)
 
 // ============================================================
 // 🔥 你的 YouTube 视频列表
 // ============================================================
 const videoItems = [
   { id: 1, title: '示例视频 1', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+  { id: 2, title: '示例视频 2', url: 'https://www.youtube.com/watch?v=9bZkp7q19f0' },
   // 添加更多...
 ]
-
-// ============================================================
-// 🔥 第三方 API（免费、稳定、无需后端）
-// ============================================================
-const getDownloadUrl = (videoId) => {
-  // 方案A：使用 y2mate 直链 API
-  return `https://www.y2mate.com/youtube/${videoId}`;
-  
-  // 方案B：使用 vevioz API（备用）
-  // return `https://api.vevioz.com/api/button/mp4/${videoId}`;
-}
 
 const getEmbedUrl = (url) => {
   let videoId = ''
@@ -89,36 +78,6 @@ const getEmbedUrl = (url) => {
 
 const playVideo = (item) => {
   currentVideo.value = item
-}
-
-// ===== 下载功能 =====
-const downloadVideo = async (url) => {
-  if (isDownloading.value) return
-  isDownloading.value = true
-
-  try {
-    // 提取视频 ID
-    let videoId = ''
-    let match = url.match(/[?&]v=([^&]+)/)
-    if (match) { videoId = match[1] }
-    match = url.match(/youtu\.be\/([^?&]+)/)
-    if (match) { videoId = match[1] }
-
-    if (!videoId) {
-      alert('无法解析视频 ID')
-      return
-    }
-
-    // 打开下载页面
-    const downloadUrl = getDownloadUrl(videoId)
-    window.open(downloadUrl, '_blank')
-    
-  } catch (error) {
-    console.error('下载失败:', error)
-    alert('下载失败，请稍后重试')
-  } finally {
-    isDownloading.value = false
-  }
 }
 
 const close = () => {
@@ -134,7 +93,6 @@ watch(() => props.visible, (val) => {
 </script>
 
 <style scoped>
-/* ===== 样式和之前一样，保持不变 ===== */
 .page-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -179,12 +137,12 @@ watch(() => props.visible, (val) => {
 .page-close:hover { color: #ff4500; transform: rotate(90deg); }
 
 .page-body {
-  padding: 20px 24px 16px;
+  padding: 16px 20px 12px;
   overflow-y: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .player-wrapper {
@@ -200,11 +158,15 @@ watch(() => props.visible, (val) => {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   padding: 8px 16px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.playing-icon { color: #ff8c00; font-size: 12px; }
 
 .placeholder {
   background: #1a1a2e;
@@ -218,95 +180,111 @@ watch(() => props.visible, (val) => {
 }
 .placeholder span { font-size: 48px; margin-bottom: 12px; }
 
-.item-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 180px;
+/* ===== 视频卡片网格 ===== */
+.video-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-height: 200px;
   overflow-y: auto;
+  padding-right: 4px;
   flex-shrink: 0;
 }
 
-.item {
+.video-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--bg-card, rgba(255,255,255,0.03));
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-card, rgba(255,255,255,0.04));
   border: 1px solid transparent;
-  border-radius: 8px;
-  transition: all 0.2s;
-  cursor: default;
-}
-
-.item:hover {
-  background: rgba(255,255,255,0.04);
-}
-.item.active {
-  background: rgba(255,140,0,0.12);
-  border-color: #ff8c00;
-}
-
-.item-icon { font-size: 16px; color: #ff0000; width: 28px; text-align: center; }
-.item-title {
-  flex: 1;
+  border-radius: 10px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 10px;
+}
+
+.video-card:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.video-card.active {
+  background: rgba(255,140,0,0.12);
+  border-color: rgba(255,140,0,0.3);
+  box-shadow: 0 0 20px rgba(255,140,0,0.05);
+}
+
+.video-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.video-card-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, rgba(255,255,255,0.25));
+  min-width: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.video-card-title {
   font-size: 13px;
   color: var(--text-primary, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
 }
-.item-title:hover { color: #ff8c00; }
 
-.item-download {
-  background: none;
-  border: none;
-  color: var(--text-secondary, rgba(255,255,255,0.3));
-  cursor: pointer;
-  padding: 4px 8px;
-  font-size: 14px;
-  transition: all 0.2s;
-  border-radius: 4px;
-  min-width: 30px;
+.video-card.active .video-card-title {
+  color: #ff8c00;
+}
+
+.video-card-right {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-.item-download:hover:not(:disabled) {
-  color: #00c853;
-  background: rgba(0, 200, 83, 0.1);
-}
-.item-download:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.item-play {
-  font-size: 11px;
-  color: var(--text-secondary, rgba(255,255,255,0.25));
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.2s;
+.video-card-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,0,0,0.12);
+  color: #ff0000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.item:hover .item-play { color: #ff8c00; }
-.item.active .item-play { color: #ff8c00; }
 
-.loading-spinner-small {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,255,255,0.1);
-  border-top: 2px solid #00c853;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  display: inline-block;
+.video-card.active .video-card-badge {
+  background: rgba(255,140,0,0.15);
+  color: #ff8c00;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+.video-card-play {
+  font-size: 10px;
+  color: var(--text-secondary, rgba(255,255,255,0.15));
+  transition: all 0.2s;
+}
+
+.video-card:hover .video-card-play {
+  color: #ff8c00;
+}
+.video-card.active .video-card-play {
+  color: #ff8c00;
+}
 
 .footer-tip {
   text-align: center;
   padding: 6px 0 2px;
-  color: var(--text-secondary, rgba(255,255,255,0.15));
+  color: var(--text-secondary, rgba(255,255,255,0.12));
   font-size: 12px;
   border-top: 1px solid var(--border-color, rgba(255,255,255,0.03));
   flex-shrink: 0;
@@ -315,18 +293,20 @@ watch(() => props.visible, (val) => {
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 @keyframes scaleIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
 
-.item-list::-webkit-scrollbar { width: 3px; }
-.item-list::-webkit-scrollbar-track { background: transparent; }
-.item-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.video-grid::-webkit-scrollbar { width: 3px; }
+.video-grid::-webkit-scrollbar-track { background: transparent; }
+.video-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
 /* ===== 浅色模式 ===== */
 body.light .page-content { background:#fff; border-color:rgba(0,0,0,0.06); }
 body.light .page-title { color:#1a1a2e; }
-body.light .item { background:#f5f6f8; }
-body.light .item-title { color:#1a1a2e; }
+body.light .video-card { background:#f5f6f8; }
+body.light .video-card:hover { background:#eef0f3; border-color:rgba(0,0,0,0.06); }
+body.light .video-card-title { color:#1a1a2e; }
+body.light .video-card.active { background:rgba(255,140,0,0.08); border-color:rgba(255,140,0,0.2); }
+body.light .video-card-number { color:rgba(0,0,0,0.2); }
+body.light .video-card-badge { background:rgba(255,0,0,0.08); color:#cc0000; }
+body.light .video-card.active .video-card-badge { background:rgba(255,140,0,0.1); color:#e67e22; }
 body.light .placeholder { background:#f5f6f8; }
-body.light .footer-tip { color:rgba(0,0,0,0.15); }
-body.light .item-download { color: rgba(0,0,0,0.3); }
-body.light .item-download:hover:not(:disabled) { color: #00c853; background: rgba(0, 200, 83, 0.08); }
-body.light .loading-spinner-small { border-color: rgba(0,0,0,0.1); border-top-color: #00c853; }
+body.light .footer-tip { color:rgba(0,0,0,0.12); }
 </style>
