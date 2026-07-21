@@ -22,6 +22,11 @@
           </button>
         </div>
 
+        <!-- 统计信息 -->
+        <div class="stats-bar" v-if="searchResults.length > 0">
+          找到 {{ searchResults.length }} 首歌曲
+        </div>
+
         <!-- 搜索结果列表 -->
         <div class="result-list" v-if="searchResults.length > 0">
           <div
@@ -45,17 +50,17 @@
         </div>
         <div v-else-if="searched" class="empty-state">
           <span>🎵</span>
-          <p>没有找到相关歌曲</p>
+          <p>没有找到相关歌曲，换个关键词试试</p>
         </div>
         <div v-else class="empty-state">
           <span>🔍</span>
-          <p>输入歌手或歌曲名搜索并下载</p>
+          <p>输入歌手或歌曲名搜索音乐</p>
         </div>
 
         <!-- 底部信息 -->
         <div class="footer-tip">
           <i class="fas fa-circle" style="color:#48bb78; font-size:0.4rem;"></i>
-          数据来自 网易云音乐 API · 支持搜索/试听/下载
+          数据来自 GD Studio API · 支持多音源
         </div>
       </div>
     </div>
@@ -71,7 +76,7 @@ const emit = defineEmits(['close'])
 // ============================================================
 // 🔥 配置
 // ============================================================
-const WY_API = 'https://wy.1356666.xyz'
+const GD_API = 'https://music-api.gdstudio.xyz/api.php'
 
 // ============================================================
 // 状态
@@ -94,17 +99,18 @@ const searchMusic = async () => {
   searchResults.value = []
 
   try {
-    const res = await fetch(`${WY_API}/search?keywords=${encodeURIComponent(trimmed)}`)
+    const url = `${GD_API}?types=search&source=netease&name=${encodeURIComponent(trimmed)}&count=30`
+    const res = await fetch(url)
     const data = await res.json()
 
-    if (data.code === 200 && data.result?.songs) {
-      searchResults.value = data.result.songs.map(song => ({
+    if (data.code === 0 && data.data?.list) {
+      searchResults.value = data.data.list.map(song => ({
         id: song.id,
         title: song.name,
-        artist: song.artists.map(a => a.name).join(' / '),
-        album: song.album?.name || '',
-        cover: song.album?.picUrl || '',
-        duration: song.duration || 0
+        artist: song.artist || '未知',
+        album: song.album || '',
+        pic_id: song.pic_id || '',
+        source: song.source || 'netease'
       }))
     } else {
       searchResults.value = []
@@ -123,18 +129,16 @@ const playSong = async (item) => {
     audioPlayer.pause()
     audioPlayer = null
     isPlaying.value = false
-    if (audioPlayer && audioPlayer.src.includes(item.id)) {
-      return
-    }
+    return
   }
 
   try {
-    const res = await fetch(`${WY_API}/song/url?id=${item.id}`)
+    const url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=128`
+    const res = await fetch(url)
     const data = await res.json()
-    const url = data.data?.[0]?.url
 
-    if (url) {
-      audioPlayer = new Audio(url)
+    if (data.code === 0 && data.data?.url) {
+      audioPlayer = new Audio(data.data.url)
       audioPlayer.play()
       isPlaying.value = true
       audioPlayer.onended = () => {
@@ -147,7 +151,7 @@ const playSong = async (item) => {
         alert('播放失败')
       }
     } else {
-      alert('获取播放链接失败，歌曲可能需要付费')
+      alert('获取播放链接失败')
     }
   } catch (e) {
     console.error('播放失败:', e)
@@ -156,26 +160,36 @@ const playSong = async (item) => {
 }
 
 // ============================================================
-// 下载
+// 下载（支持高音质）
 // ============================================================
 const downloadSong = async (item) => {
   if (isDownloading.value) return
   isDownloading.value = true
 
   try {
-    const res = await fetch(`${WY_API}/song/url?id=${item.id}`)
-    const data = await res.json()
-    const url = data.data?.[0]?.url
+    // 先用 320k 音质，如果不行用 128
+    let url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=320`
+    let res = await fetch(url)
+    let data = await res.json()
 
-    if (url) {
+    // 如果 320 失败，降级到 128
+    if (data.code !== 0 || !data.data?.url) {
+      url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=128`
+      res = await fetch(url)
+      data = await res.json()
+    }
+
+    const downloadUrl = data.data?.url
+
+    if (downloadUrl) {
       const a = document.createElement('a')
-      a.href = url
+      a.href = downloadUrl
       a.download = `${item.title}-${item.artist}.mp3`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
     } else {
-      alert('获取下载链接失败，歌曲可能需要付费')
+      alert('获取下载链接失败')
     }
   } catch (e) {
     console.error('下载失败:', e)
@@ -235,7 +249,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ===== 遮罩 ===== */
+/* ===== 样式和之前一样 ===== */
 .page-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -248,7 +262,6 @@ onUnmounted(() => {
   animation: fadeIn 0.25s ease;
 }
 
-/* ===== 内容 - 强制白色 ===== */
 .page-content {
   background: #ffffff !important;
   border-radius: 20px;
@@ -263,7 +276,6 @@ onUnmounted(() => {
   animation: scaleIn 0.25s ease;
 }
 
-/* ===== 头部 ===== */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -288,17 +300,15 @@ onUnmounted(() => {
 }
 .page-close:hover { color: #ff4500; transform: rotate(90deg); }
 
-/* ===== 主体 ===== */
 .page-body {
   padding: 20px 24px 16px;
   overflow-y: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-/* ===== 搜索框 ===== */
 .search-box {
   display: flex;
   gap: 0.5rem;
@@ -342,7 +352,13 @@ onUnmounted(() => {
   box-shadow: 0 4px 20px rgba(79,172,254,0.35);
 }
 
-/* ===== 结果列表 ===== */
+.stats-bar {
+  font-size: 12px;
+  color: #888;
+  padding: 4px 4px 0 4px;
+  flex-shrink: 0;
+}
+
 .result-list {
   display: flex;
   flex-direction: column;
@@ -417,7 +433,6 @@ onUnmounted(() => {
   color: #fff;
 }
 
-/* ===== 空状态 ===== */
 .empty-state {
   flex: 1;
   display: flex;
@@ -431,7 +446,6 @@ onUnmounted(() => {
 .empty-state span { font-size: 48px; }
 .empty-state p { font-size: 14px; }
 
-/* ===== 底部 ===== */
 .footer-tip {
   color: #888;
   font-size: 0.8rem;
@@ -442,11 +456,9 @@ onUnmounted(() => {
   padding: 4px 0;
 }
 
-/* ===== 动画 ===== */
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 @keyframes scaleIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
 
-/* ===== 滚动条 ===== */
 .result-list::-webkit-scrollbar { width: 4px; }
 .result-list::-webkit-scrollbar-track { background: transparent; }
 .result-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
