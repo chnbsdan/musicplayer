@@ -60,7 +60,7 @@
         <!-- 底部信息 -->
         <div class="footer-tip">
           <i class="fas fa-circle" style="color:#48bb78; font-size:0.4rem;"></i>
-          数据来自 GD Studio API · 支持多音源
+          数据来自 GD Studio API · 支持搜索/试听/下载
         </div>
       </div>
     </div>
@@ -81,7 +81,7 @@ const GD_API = 'https://music-api.gdstudio.xyz/api.php'
 // ============================================================
 // 状态
 // ============================================================
-const keyword = ref('')
+const keyword = ref('周杰伦')
 const searchResults = ref([])
 const searched = ref(false)
 const isDownloading = ref(false)
@@ -103,11 +103,14 @@ const searchMusic = async () => {
     const res = await fetch(url)
     const data = await res.json()
 
-    if (data.code === 0 && data.data?.list) {
-      searchResults.value = data.data.list.map(song => ({
-        id: song.id,
-        title: song.name,
-        artist: song.artist || '未知',
+    // 🔥 GD Studio API 返回的直接就是数组
+    if (Array.isArray(data) && data.length > 0) {
+      searchResults.value = data.map(song => ({
+        id: song.id || '',
+        title: song.name || '未知歌曲',
+        artist: Array.isArray(song.artist) 
+          ? song.artist.join(' / ') 
+          : (song.artist || '未知'),
         album: song.album || '',
         pic_id: song.pic_id || '',
         source: song.source || 'netease'
@@ -160,14 +163,14 @@ const playSong = async (item) => {
 }
 
 // ============================================================
-// 下载（支持高音质）
+// 下载
 // ============================================================
 const downloadSong = async (item) => {
   if (isDownloading.value) return
   isDownloading.value = true
 
   try {
-    // 先用 320k 音质，如果不行用 128
+    // 先用 320k 音质
     let url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=320`
     let res = await fetch(url)
     let data = await res.json()
@@ -249,7 +252,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ===== 样式和之前一样 ===== */
+/* ===== 样式 ===== */
 .page-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
