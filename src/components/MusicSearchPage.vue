@@ -1,0 +1,278 @@
+<template>
+  <div v-if="visible" class="page-overlay" @click="close">
+    <div class="page-content" @click.stop>
+      <!-- 头部 -->
+      <div class="page-header">
+        <span class="page-title"><i class="fas fa-search" style="color:#f5576c;"></i> 音乐搜索</span>
+        <button class="page-close" @click="close">&times;</button>
+      </div>
+
+      <div class="page-body">
+        <!-- 搜索框 -->
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="输入歌手或歌曲名..."
+            v-model="keyword"
+            @keydown.enter="searchMusic"
+          />
+          <button @click="searchMusic">
+            <i class="fas fa-search"></i> 搜索
+          </button>
+        </div>
+
+        <!-- iframe 播放器 -->
+        <div class="iframe-wrapper">
+          <div class="iframe-container">
+            <iframe :src="iframeUrl" id="musicFrame" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="footer-tip">
+          <i class="fas fa-circle" style="color:#48bb78; font-size:0.4rem;"></i>
+          数据来自 Meting API · 支持歌手/歌曲搜索
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue'
+
+const props = defineProps({ visible: Boolean })
+const emit = defineEmits(['close'])
+
+const keyword = ref('王杰')
+const iframeUrl = ref('https://api.i-meto.com/meting/demo?id=王杰')
+
+// 搜索
+const searchMusic = () => {
+  const trimmed = keyword.value.trim()
+  if (!trimmed) return
+  iframeUrl.value = `https://api.i-meto.com/meting/demo?id=${encodeURIComponent(trimmed)}`
+}
+
+// 键盘快捷键：Ctrl+K 聚焦搜索
+const handleKeydown = (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault()
+    const input = document.getElementById('searchInput')
+    if (input) { input.focus(); input.select() }
+  }
+}
+
+// 关闭弹窗
+const close = () => {
+  emit('close')
+}
+
+// 打开时自动聚焦
+watch(() => props.visible, (val) => {
+  if (val) {
+    setTimeout(() => {
+      const input = document.getElementById('searchInput')
+      if (input) input.focus()
+    }, 300)
+  }
+})
+
+// 键盘事件监听
+watch(() => props.visible, (val) => {
+  if (val) {
+    document.addEventListener('keydown', handleKeydown)
+  } else {
+    document.removeEventListener('keydown', handleKeydown)
+  }
+}, { immediate: true })
+</script>
+
+<style scoped>
+/* ===== 遮罩 ===== */
+.page-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 999999;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+
+/* ===== 内容 ===== */
+.page-content {
+  background: var(--bg-primary, #0b0e14);
+  border-radius: 20px;
+  width: 92%;
+  max-width: 900px;
+  max-height: 88vh;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.25s ease;
+}
+
+/* ===== 头部 ===== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  flex-shrink: 0;
+}
+.page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-close {
+  background: none; border: none;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+  font-size: 28px; cursor: pointer;
+  transition: all 0.3s;
+}
+.page-close:hover { color: #ff4500; transform: rotate(90deg); }
+
+/* ===== 主体 ===== */
+.page-body {
+  padding: 20px 24px 16px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== 搜索框 ===== */
+.search-box {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--bg-card, rgba(255,255,255,0.03));
+  padding: 0.3rem;
+  border-radius: 60px;
+  flex: 1;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+.search-box:focus-within {
+  border-color: #f5576c;
+  box-shadow: 0 0 0 3px rgba(245,87,108,0.15);
+}
+
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  color: var(--text-primary, #fff);
+  font-size: 0.95rem;
+  outline: none;
+  min-width: 0;
+}
+.search-box input::placeholder {
+  color: var(--text-muted, #4a5568);
+}
+
+.search-box button {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border: none;
+  color: #fff;
+  padding: 0.7rem 1.8rem;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.search-box button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(245,87,108,0.35);
+}
+.search-box button:active { transform: scale(0.96); }
+
+/* ===== iframe ===== */
+.iframe-wrapper {
+  background: var(--bg-secondary, #131820);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  box-shadow: var(--shadow, 0 20px 60px rgba(0,0,0,0.6));
+  flex: 1;
+  min-height: 400px;
+  position: relative;
+}
+
+.iframe-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  opacity: 0.3;
+  z-index: 2;
+}
+
+.iframe-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background: #0b0e14;
+  transition: background 0.3s ease;
+}
+[data-theme="light"] .iframe-container {
+  background: #f8f9fa;
+}
+
+.iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  border: none;
+  display: block;
+}
+
+/* ===== 底部 ===== */
+.footer-tip {
+  color: var(--text-muted, #4a5568);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 4px 0;
+}
+
+/* ===== 动画 ===== */
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes scaleIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+
+/* ===== 滚动条 ===== */
+.page-body::-webkit-scrollbar { width: 4px; }
+.page-body::-webkit-scrollbar-track { background: transparent; }
+.page-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* ===== 浅色模式 ===== */
+body.light .page-content { background:#fff; border-color:rgba(0,0,0,0.06); }
+body.light .page-title { color:#1a1a2e; }
+body.light .search-box { background:#f5f6f8; border-color:#e8ecf1; }
+body.light .search-box input { color:#1a1a2e; }
+body.light .search-box input::placeholder { color:#aaa; }
+body.light .iframe-wrapper { background:#f5f6f8; border-color:#e8ecf1; }
+body.light .footer-tip { color:#888; }
+</style>
