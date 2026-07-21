@@ -6,7 +6,7 @@
         <button class="page-close" @click="close">&times;</button>
       </div>
       <div class="page-body">
-        <!-- 视频播放器 -->
+        <!-- 播放器 -->
         <div v-if="currentVideo" class="player-wrapper">
           <iframe
             :src="getEmbedUrl(currentVideo.url)"
@@ -21,7 +21,7 @@
           <p>请选择视频</p>
         </div>
 
-        <!-- 视频列表 + 下载按钮 -->
+        <!-- 视频列表 -->
         <div class="item-list">
           <div
             v-for="item in videoItems"
@@ -44,7 +44,7 @@
           </div>
         </div>
 
-        <div class="footer-tip">💡 点击下载按钮，跳转到 y2mate 选择画质下载</div>
+        <div class="footer-tip">💡 点击下载按钮，一键获取下载链接</div>
       </div>
     </div>
   </div>
@@ -64,14 +64,19 @@ const isDownloading = ref(false)
 // ============================================================
 const videoItems = [
   { id: 1, title: '示例视频 1', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-  { id: 2, title: '示例视频 2', url: 'https://www.youtube.com/watch?v=9bZkp7q19f0' },
   // 添加更多...
 ]
 
 // ============================================================
-// 🔥 API 地址（改成你自己的 Vercel 域名）
+// 🔥 第三方 API（免费、稳定、无需后端）
 // ============================================================
-const API_BASE_URL = 'https://youtube-download-api-nine.vercel.app/api/download';
+const getDownloadUrl = (videoId) => {
+  // 方案A：使用 y2mate 直链 API
+  return `https://www.y2mate.com/youtube/${videoId}`;
+  
+  // 方案B：使用 vevioz API（备用）
+  // return `https://api.vevioz.com/api/button/mp4/${videoId}`;
+}
 
 const getEmbedUrl = (url) => {
   let videoId = ''
@@ -92,15 +97,22 @@ const downloadVideo = async (url) => {
   isDownloading.value = true
 
   try {
-    const response = await fetch(`${API_BASE_URL}?url=${encodeURIComponent(url)}`)
-    const data = await response.json()
+    // 提取视频 ID
+    let videoId = ''
+    let match = url.match(/[?&]v=([^&]+)/)
+    if (match) { videoId = match[1] }
+    match = url.match(/youtu\.be\/([^?&]+)/)
+    if (match) { videoId = match[1] }
 
-    if (data.success && data.downloadUrl) {
-      // 跳转到 y2mate 下载页面
-      window.open(data.downloadUrl, '_blank')
-    } else {
-      alert('获取下载链接失败: ' + (data.error || '未知错误'))
+    if (!videoId) {
+      alert('无法解析视频 ID')
+      return
     }
+
+    // 打开下载页面
+    const downloadUrl = getDownloadUrl(videoId)
+    window.open(downloadUrl, '_blank')
+    
   } catch (error) {
     console.error('下载失败:', error)
     alert('下载失败，请稍后重试')
@@ -122,6 +134,7 @@ watch(() => props.visible, (val) => {
 </script>
 
 <style scoped>
+/* ===== 样式和之前一样，保持不变 ===== */
 .page-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
