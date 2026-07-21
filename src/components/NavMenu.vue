@@ -1,11 +1,9 @@
 <template>
   <div class="nav-menu-wrapper">
-    <!-- 左上角菜单按钮 -->
     <button class="nav-menu-btn" @click="toggleMenu" title="导航菜单">
       <span class="menu-icon">☰</span>
     </button>
 
-    <!-- 下拉菜单 -->
     <div v-show="isOpen" class="nav-dropdown" @click.stop>
       <div class="nav-item" @click="openPage('video')">
         <span class="nav-icon">▶</span> 在线视频
@@ -15,6 +13,9 @@
       </div>
       <div class="nav-item" @click="openPage('search')">
         <span class="nav-icon"><i class="fas fa-search"></i></span> 音乐搜索
+      </div>
+      <div class="nav-item" @click="openPage('download')">
+        <span class="nav-icon"><i class="fas fa-download" style="color:#4facfe;"></i></span> 音乐下载
       </div>
       <div class="nav-item" @click="openPage('youtube')">
         <span class="nav-icon"><i class="fab fa-youtube"></i></span> YouTube
@@ -31,6 +32,7 @@
     <VideoPage :visible="pageVisible && pageType === 'video'" @close="pageVisible = false" />
     <MusicPage :visible="pageVisible && pageType === 'music'" @close="pageVisible = false" />
     <MusicSearchPage :visible="pageVisible && pageType === 'search'" @close="pageVisible = false" />
+    <MusicDownloadPage :visible="pageVisible && pageType === 'download'" @close="pageVisible = false" />
     <YouTubePage :visible="pageVisible && pageType === 'youtube'" @close="pageVisible = false" />
     <BilibiliPage :visible="pageVisible && pageType === 'bilibili'" @close="pageVisible = false" />
     <LinksPage :visible="pageVisible && pageType === 'links'" @close="pageVisible = false" />
@@ -42,6 +44,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import VideoPage from './VideoPage.vue'
 import MusicPage from './MusicPage.vue'
 import MusicSearchPage from './MusicSearchPage.vue'
+import MusicDownloadPage from './MusicDownloadPage.vue'
 import YouTubePage from './YouTubePage.vue'
 import BilibiliPage from './BilibiliPage.vue'
 import LinksPage from './LinksPage.vue'
@@ -50,9 +53,7 @@ const isOpen = ref(false)
 const pageVisible = ref(false)
 const pageType = ref('video')
 
-const toggleMenu = () => {
-  isOpen.value = !isOpen.value
-}
+const toggleMenu = () => { isOpen.value = !isOpen.value }
 
 const openPage = (type) => {
   isOpen.value = false
