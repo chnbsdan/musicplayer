@@ -4,7 +4,7 @@
       <!-- 头部 -->
       <div class="page-header">
         <span class="page-title"><i class="fas fa-download" style="color:#4facfe;"></i> 音乐下载</span>
-        <button class="page-close" @click="close">&times;</button>
+        <button class="page-close" @click="close"><i class="fas fa-times"></i></button>
       </div>
 
       <div class="page-body">
@@ -24,6 +24,7 @@
 
         <!-- 统计信息 -->
         <div class="stats-bar" v-if="searchResults.length > 0">
+          <i class="fas fa-music" style="color:#4facfe;"></i>
           找到 {{ searchResults.length }} 首歌曲
         </div>
 
@@ -33,14 +34,20 @@
             v-for="(item, index) in searchResults"
             :key="index"
             class="result-item"
+            :class="{ 'is-playing': item.isPlaying }"
           >
             <div class="result-info">
               <span class="result-title">{{ item.title }}</span>
-              <span class="result-artist">{{ item.artist }}</span>
+              <span class="result-artist"><i class="fas fa-user" style="font-size:10px;color:#aaa;"></i> {{ item.artist }}</span>
             </div>
             <div class="result-actions">
-              <button class="btn-play" @click="playSong(item)" title="试听">
-                <i class="fas fa-play"></i>
+              <button 
+                class="btn-play" 
+                @click="togglePlay(item)" 
+                :title="item.isPlaying ? '暂停' : '试听'"
+              >
+                <i v-if="item.isPlaying" class="fas fa-pause"></i>
+                <i v-else class="fas fa-play"></i>
               </button>
               <button class="btn-download" @click="downloadSong(item)" title="下载">
                 <i class="fas fa-download"></i>
@@ -49,11 +56,11 @@
           </div>
         </div>
         <div v-else-if="searched" class="empty-state">
-          <span>🎵</span>
+          <i class="fas fa-music" style="font-size:48px;color:#ddd;"></i>
           <p>没有找到相关歌曲，换个关键词试试</p>
         </div>
         <div v-else class="empty-state">
-          <span>🔍</span>
+          <i class="fas fa-search" style="font-size:48px;color:#ddd;"></i>
           <p>输入歌手或歌曲名搜索音乐</p>
         </div>
 
@@ -85,8 +92,8 @@ const keyword = ref('周杰伦')
 const searchResults = ref([])
 const searched = ref(false)
 const isDownloading = ref(false)
-const isPlaying = ref(false)
 let audioPlayer = null
+let currentPlayingId = ref(null)
 
 // ============================================================
 // 搜索
@@ -103,7 +110,6 @@ const searchMusic = async () => {
     const res = await fetch(url)
     const data = await res.json()
 
-    // 🔥 GD Studio API 返回的直接就是数组
     if (Array.isArray(data) && data.length > 0) {
       searchResults.value = data.map(song => ({
         id: song.id || '',
@@ -113,7 +119,8 @@ const searchMusic = async () => {
           : (song.artist || '未知'),
         album: song.album || '',
         pic_id: song.pic_id || '',
-        source: song.source || 'netease'
+        source: song.source || 'netease',
+        isPlaying: false
       }))
     } else {
       searchResults.value = []
@@ -125,14 +132,23 @@ const searchMusic = async () => {
 }
 
 // ============================================================
-// 试听
+// 播放/暂停切换
 // ============================================================
-const playSong = async (item) => {
-  if (isPlaying.value && audioPlayer) {
+const togglePlay = async (item) => {
+  if (currentPlayingId.value === item.id) {
+    if (audioPlayer) {
+      audioPlayer.pause()
+      audioPlayer = null
+      currentPlayingId.value = null
+      searchResults.value.forEach(s => { s.isPlaying = false })
+    }
+    return
+  }
+
+  if (audioPlayer) {
     audioPlayer.pause()
     audioPlayer = null
-    isPlaying.value = false
-    return
+    searchResults.value.forEach(s => { s.isPlaying = false })
   }
 
   try {
@@ -143,13 +159,17 @@ const playSong = async (item) => {
     if (data.code === 0 && data.data?.url) {
       audioPlayer = new Audio(data.data.url)
       audioPlayer.play()
-      isPlaying.value = true
+      currentPlayingId.value = item.id
+      item.isPlaying = true
+
       audioPlayer.onended = () => {
-        isPlaying.value = false
+        currentPlayingId.value = null
+        item.isPlaying = false
         audioPlayer = null
       }
       audioPlayer.onerror = () => {
-        isPlaying.value = false
+        currentPlayingId.value = null
+        item.isPlaying = false
         audioPlayer = null
         alert('播放失败')
       }
@@ -170,12 +190,10 @@ const downloadSong = async (item) => {
   isDownloading.value = true
 
   try {
-    // 先用 320k 音质
     let url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=320`
     let res = await fetch(url)
     let data = await res.json()
 
-    // 如果 320 失败，降级到 128
     if (data.code !== 0 || !data.data?.url) {
       url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=128`
       res = await fetch(url)
@@ -219,7 +237,8 @@ const close = () => {
   if (audioPlayer) {
     audioPlayer.pause()
     audioPlayer = null
-    isPlaying.value = false
+    currentPlayingId.value = null
+    searchResults.value.forEach(s => { s.isPlaying = false })
   }
   emit('close')
 }
@@ -298,10 +317,16 @@ onUnmounted(() => {
 .page-close {
   background: none; border: none;
   color: #999;
-  font-size: 28px; cursor: pointer;
+  font-size: 20px;
+  cursor: pointer;
   transition: all 0.3s;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
-.page-close:hover { color: #ff4500; transform: rotate(90deg); }
+.page-close:hover { 
+  color: #ff4500; 
+  background: rgba(255,69,0,0.08);
+}
 
 .page-body {
   padding: 20px 24px 16px;
@@ -360,6 +385,9 @@ onUnmounted(() => {
   color: #888;
   padding: 4px 4px 0 4px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .result-list {
@@ -386,6 +414,14 @@ onUnmounted(() => {
   border-color: #d5dbe3;
 }
 
+.result-item.is-playing {
+  background: rgba(79, 172, 254, 0.08);
+  border-color: #4facfe;
+}
+.result-item.is-playing .result-title {
+  color: #4facfe;
+}
+
 .result-info {
   display: flex;
   flex-direction: column;
@@ -401,6 +437,9 @@ onUnmounted(() => {
 .result-artist {
   font-size: 12px;
   color: #888;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .result-actions {
@@ -418,6 +457,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 13px;
 }
 .btn-play {
   background: rgba(74, 222, 128, 0.15);
@@ -427,6 +467,18 @@ onUnmounted(() => {
   background: #22c55e;
   color: #fff;
 }
+.btn-play:active {
+  transform: scale(0.9);
+}
+.result-item.is-playing .btn-play {
+  background: rgba(245, 87, 108, 0.15);
+  color: #f5576c;
+}
+.result-item.is-playing .btn-play:hover {
+  background: #f5576c;
+  color: #fff;
+}
+
 .btn-download {
   background: rgba(79, 172, 254, 0.15);
   color: #4facfe;
@@ -446,7 +498,6 @@ onUnmounted(() => {
   gap: 12px;
   min-height: 200px;
 }
-.empty-state span { font-size: 48px; }
 .empty-state p { font-size: 14px; }
 
 .footer-tip {
