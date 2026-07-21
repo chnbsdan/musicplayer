@@ -1,6 +1,6 @@
 <template>
   <div v-if="visible" class="page-overlay" @click="close">
-    <div class="page-content" @click.stop>
+    <div class="page-content" @click.stop">
       <!-- 头部 -->
       <div class="page-header">
         <span class="page-title"><i class="fas fa-download" style="color:#4facfe;"></i> 音乐下载</span>
@@ -41,11 +41,7 @@
               <span class="result-artist"><i class="fas fa-user" style="font-size:10px;color:#aaa;"></i> {{ item.artist }}</span>
             </div>
             <div class="result-actions">
-              <button 
-                class="btn-play" 
-                @click="togglePlay(item)" 
-                :title="item.isPlaying ? '暂停' : '试听'"
-              >
+              <button class="btn-play" @click="togglePlay(item)" :title="item.isPlaying ? '暂停' : '试听'">
                 <i v-if="item.isPlaying" class="fas fa-pause"></i>
                 <i v-else class="fas fa-play"></i>
               </button>
@@ -96,7 +92,7 @@ let audioPlayer = null
 let currentPlayingId = ref(null)
 
 // ============================================================
-// 搜索
+// 搜索 - GD Studio 返回的是数组
 // ============================================================
 const searchMusic = async () => {
   const trimmed = keyword.value.trim()
@@ -114,9 +110,7 @@ const searchMusic = async () => {
       searchResults.value = data.map(song => ({
         id: song.id || '',
         title: song.name || '未知歌曲',
-        artist: Array.isArray(song.artist) 
-          ? song.artist.join(' / ') 
-          : (song.artist || '未知'),
+        artist: Array.isArray(song.artist) ? song.artist.join(' / ') : (song.artist || '未知'),
         album: song.album || '',
         pic_id: song.pic_id || '',
         source: song.source || 'netease',
@@ -156,8 +150,11 @@ const togglePlay = async (item) => {
     const res = await fetch(url)
     const data = await res.json()
 
-    if (data.code === 0 && data.data?.url) {
-      audioPlayer = new Audio(data.data.url)
+    // 🔥 修复：GD Studio 返回的是 { url, br, size }，没有嵌套 data
+    const songUrl = data?.url
+
+    if (songUrl && typeof songUrl === 'string' && songUrl.startsWith('http')) {
+      audioPlayer = new Audio(songUrl)
       audioPlayer.play()
       currentPlayingId.value = item.id
       item.isPlaying = true
@@ -171,10 +168,10 @@ const togglePlay = async (item) => {
         currentPlayingId.value = null
         item.isPlaying = false
         audioPlayer = null
-        alert('播放失败')
+        alert('播放失败，歌曲可能已失效')
       }
     } else {
-      alert('获取播放链接失败')
+      alert('该歌曲暂无播放链接，可能是付费歌曲')
     }
   } catch (e) {
     console.error('播放失败:', e)
@@ -190,27 +187,29 @@ const downloadSong = async (item) => {
   isDownloading.value = true
 
   try {
+    // 先试 320k
     let url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=320`
     let res = await fetch(url)
     let data = await res.json()
+    let songUrl = data?.url
 
-    if (data.code !== 0 || !data.data?.url) {
+    // 如果 320 不行，降级到 128
+    if (!songUrl || typeof songUrl !== 'string' || !songUrl.startsWith('http')) {
       url = `${GD_API}?types=url&source=${item.source || 'netease'}&id=${item.id}&br=128`
       res = await fetch(url)
       data = await res.json()
+      songUrl = data?.url
     }
 
-    const downloadUrl = data.data?.url
-
-    if (downloadUrl) {
+    if (songUrl && typeof songUrl === 'string' && songUrl.startsWith('http')) {
       const a = document.createElement('a')
-      a.href = downloadUrl
+      a.href = songUrl
       a.download = `${item.title}-${item.artist}.mp3`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
     } else {
-      alert('获取下载链接失败')
+      alert('获取下载链接失败，可能是付费歌曲')
     }
   } catch (e) {
     console.error('下载失败:', e)
@@ -271,7 +270,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ===== 样式 ===== */
 .page-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
