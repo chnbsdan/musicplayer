@@ -1,6 +1,7 @@
 
 <div align="center">
-  <img src="演示1.jpg" alt="Music Player" width="800" style="border-radius: 16px;">
+  <img src="public/演示1.jpg" alt="Music Player" width="800" style="border-radius: 16px;">
+  <img src="public/演示2..jpg" alt="Music Player" width="800" style="border-radius: 16px;">
   
   # 🎵 Music Player
   
