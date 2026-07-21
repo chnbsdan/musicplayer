@@ -1,7 +1,6 @@
 
 <div align="center">
-  <img src="public/演示1.jpg" alt="Music Player" width="800" style="border-radius: 16px;">
-  <img src="public/演示2..jpg" alt="Music Player" width="800" style="border-radius: 16px;">
+  
   
   # 🎵 Music Player
   
@@ -20,6 +19,9 @@
     <a href="#-API-接口">API 接口</a> •
     <a href="#-项目结构">项目结构</a>
   </p>
+
+  <img src="public/演示1.jpg" alt="Music Player" width="800" style="border-radius: 16px;">
+  <img src="public/演示2..jpg" alt="Music Player" width="800" style="border-radius: 16px;">
 </div>
 
 ---
